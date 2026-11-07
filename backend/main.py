@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, BackgroundTasks, UploadFile, File, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse, FileResponse
 
 from backend.models.schemas import (
     StartResearchRequest,
@@ -25,8 +25,10 @@ from backend.database.database import (
     save_paper_section, get_paper_sections,
     save_paper_job, get_paper_job, get_latest_paper_job,
     get_originality_findings, clear_originality_findings,
-    save_paper_source,
     save_paper_revision, get_paper_revisions, get_paper_revision,
+    # Export records
+    save_paper_export, get_paper_exports, get_paper_export,
+    get_latest_export_by_format,
 )
 from backend.crew.research_crew import (
     ResearchCrew,
@@ -37,7 +39,13 @@ from backend.crew.paper_crew import PaperCrew, get_structure, build_references_s
 from backend.tools.llm import check_ollama_health, call_ollama
 from backend.tools.search import DDGS
 from backend.tools.documents import extract_text_from_file
-from backend.tools.paper_export import export_markdown, export_docx, export_pdf
+from backend.tools.paper_export import (
+    export_markdown,
+    export_docx,
+    export_pdf,
+    export_session_report_pdf,
+    export_session_report_markdown,
+)
 
 app = FastAPI(
     title="ResearchForge API",
@@ -155,6 +163,77 @@ async def get_research_report(research_id: str):
     if not report:
         raise HTTPException(status_code=404, detail="Report not yet generated or session failed")
     return report
+
+@app.post("/api/research/{research_id}/export")
+async def export_research_report(research_id: str, data: Optional[Dict[str, Any]] = None):
+    """
+    Generate and download a complete, structured research report as PDF or Markdown.
+    Saves the file locally in data/reports/sessions/{research_id}/ and streams it back.
+    """
+    session = get_session(research_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Research session not found")
+
+    report = get_report_for_session(research_id)
+    if not report:
+        raise HTTPException(
+            status_code=400,
+            detail="Research report not yet compiled. Wait for the research process to complete before exporting."
+        )
+
+    sources = get_sources_for_session(research_id)
+    claims = get_claims_for_session(research_id)
+
+    fmt = (data.get("format") if data else "pdf") or "pdf"
+    fmt = fmt.lower()
+
+    query = session.get("query", "research")
+    safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in query)[:50].strip() or "Research_Report"
+
+    reports_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "data", "reports", "sessions", research_id
+    )
+    os.makedirs(reports_dir, exist_ok=True)
+
+    if fmt == "pdf":
+        content = export_session_report_pdf(report, session=session, sources=sources, claims=claims)
+        file_path = os.path.join(reports_dir, "research_report.pdf")
+        with open(file_path, "wb") as f:
+            f.write(content)
+        return Response(
+            content=content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="ResearchForge_{safe_title}.pdf"',
+                "Content-Type": "application/pdf"
+            }
+        )
+    else:
+        content = export_session_report_markdown(report, session=session, sources=sources, claims=claims)
+        file_path = os.path.join(reports_dir, "research_report.md")
+        with open(file_path, "wb") as f:
+            f.write(content)
+        return Response(
+            content=content,
+            media_type="text/markdown; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="ResearchForge_{safe_title}.md"',
+                "Content-Type": "text/markdown; charset=utf-8"
+            }
+        )
+
+@app.get("/api/research/{research_id}/export/pdf")
+async def export_research_report_pdf_get(research_id: str):
+    """Direct GET shortcut to export and download research report PDF."""
+    return await export_research_report(research_id, {"format": "pdf"})
+
+@app.get("/api/research/{research_id}/download/{format}")
+async def download_research_report_file(research_id: str, format: str):
+    """Direct download endpoint for saved or generated research report file."""
+    norm_fmt = format.lower()
+    if norm_fmt in ["md", "markdown"]:
+        return await export_research_report(research_id, {"format": "markdown"})
+    return await export_research_report(research_id, {"format": "pdf"})
 
 @app.get("/api/research/{research_id}/timeline")
 async def get_research_timeline(research_id: str):
@@ -416,46 +495,28 @@ async def update_paper_section(paper_id: str, section_id: str, data: Dict[str, A
     return sec
 
 @app.post("/api/papers/{paper_id}/sections/{section_key}/regenerate")
-async def regenerate_section(paper_id: str, section_key: str, background_tasks: BackgroundTasks):
-    """Regenerate a single section via LLM (non-blocking)."""
+async def regenerate_section(paper_id: str, section_key: str):
+    """Regenerate a single section via LLM and return the updated section."""
     paper = get_paper(paper_id)
     if not paper:
         raise HTTPException(status_code=404, detail="Paper not found")
 
-    async def _regen():
-        sources = get_paper_sources(paper_id)
-        paper_type = paper.get("paper_type", "General Academic Paper")
-        plan_json = json.dumps(paper.get("plan") or {})[:600]
-        source_snippets = "\n".join(
-            f"[{i+1}] {s.get('title','')} ({s.get('year','')}): {(s.get('snippet','') or '')[:200]}"
-            for i, s in enumerate(sources[:12])
-        )
-        structure = get_structure(paper_type)
-        sec_def = next((s for s in structure if s["key"] == section_key), None)
-        title = sec_def["title"] if sec_def else section_key
+    sources = get_paper_sources(paper_id)
+    paper_type = paper.get("paper_type", "General Academic Paper")
+    structure = get_structure(paper_type)
+    sec_def = next((s for s in structure if s["key"] == section_key), None)
+    if not sec_def:
+        sec_def = {"key": section_key, "title": section_key.replace("_", " ").title()}
 
-        system = (
-            "You are an expert academic writer. Rewrite this section with improved clarity. "
-            "Do NOT invent facts. Cite as [1], [2] etc."
-        )
-        prompt = (
-            f"Paper Type: {paper_type}\nPaper Title: {paper.get('title','')}\n"
-            f"Research Question: {paper.get('research_question','')}\nPlan: {plan_json}\n\n"
-            f"Sources:\n{source_snippets}\n\nRewrite the **{title}** section:"
-        )
-        content = await call_ollama(prompt, system=system, temperature=0.3, timeout=120.0)
-        if content and len(content.strip()) > 80:
-            sections = get_paper_sections(paper_id)
-            for sec in sections:
-                if sec["section_key"] == section_key:
-                    sec["content"] = content
-                    sec["word_count"] = len(content.split())
-                    sec["status"] = "regenerated"
-                    save_paper_section(sec)
-                    break
+    sections = get_paper_sections(paper_id)
+    existing_sec = next((s for s in sections if s["section_key"] == section_key), None)
+    order_idx = existing_sec["order_index"] if existing_sec else 0
 
-    background_tasks.add_task(_regen)
-    return {"status": "regenerating"}
+    crew = PaperCrew(paper_id, f"regen_{uuid.uuid4().hex[:6]}")
+    updated_sec = await crew.draft_single_section(sec_def, sources, order_index=order_idx)
+    updated_sec["status"] = "regenerated"
+    save_paper_section(updated_sec)
+    return updated_sec
 
 @app.post("/api/papers/{paper_id}/sections/{section_key}/transform")
 async def transform_section(paper_id: str, section_key: str, data: Dict[str, Any]):
@@ -477,7 +538,15 @@ async def transform_section(paper_id: str, section_key: str, data: Dict[str, Any
     }
     instruction = action_instructions.get(action, action_instructions["clarity"])
     prompt = f"{instruction}\n\nExisting Section Content:\n{content}\n\nRewritten Section (scholarly prose only, no intro or chatter):"
-    new_content = await call_ollama(prompt, system="You are an expert academic editor.", temperature=0.25, timeout=120.0)
+    new_content = await call_ollama(
+        prompt,
+        system="You are an expert academic editor.",
+        temperature=0.25,
+        max_tokens=1500,
+        num_ctx=8192,
+        think=False,
+        timeout=150.0
+    )
 
     if new_content and len(new_content.strip()) > 50:
         sec["content"] = new_content.strip()
@@ -591,36 +660,222 @@ async def get_references(paper_id: str):
 
 @app.post("/api/papers/{paper_id}/export")
 async def export_paper(paper_id: str, data: Dict[str, Any]):
-    """Export the paper in DOCX, PDF, or Markdown format."""
+    """
+    Export the paper in DOCX, PDF, or Markdown format.
+
+    Accepts a JSON body with:
+      - format: "pdf" | "docx" | "markdown"
+      - author_name, institution, department, submission_date (all optional)
+      - save_to_disk: bool (default True) — saves file and records export in DB
+    """
     paper = get_paper(paper_id)
     if not paper:
         raise HTTPException(status_code=404, detail="Paper not found")
+
     sections = get_paper_sections(paper_id)
     if not sections:
         raise HTTPException(status_code=400, detail="No sections to export")
 
     fmt = (data.get("format") or "markdown").lower()
+    if fmt not in ("pdf", "docx", "markdown", "md"):
+        raise HTTPException(status_code=400, detail="Unsupported format. Use pdf, docx, or markdown.")
+
+    # Normalise "md" → "markdown"
+    if fmt == "md":
+        fmt = "markdown"
+
     title = paper.get("title", "Research Paper")
     safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in title)[:60]
 
+    # Build metadata dict from paper fields + request body overrides
+    paper_meta = {
+        "author_name": data.get("author_name") or paper.get("author_name", ""),
+        "institution": data.get("institution") or paper.get("institution", ""),
+        "department": data.get("department") or paper.get("department", ""),
+        "submission_date": data.get("submission_date") or datetime.utcnow().strftime("%B %d, %Y"),
+        "academic_field": data.get("academic_field") or paper.get("field", ""),
+        "citation_style": data.get("citation_style") or paper.get("citation_style", "APA 7"),
+        "abstract": paper.get("abstract", ""),
+        "research_question": paper.get("research_question", ""),
+        "paper_type": paper.get("paper_type", "Academic Paper"),
+    }
+
+    sources = get_paper_sources(paper_id)
+
+    # Generate file content
     if fmt == "docx":
-        content = export_docx(title, sections)
-        return Response(
-            content=content,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f'attachment; filename="{safe_title}.docx"'}
-        )
+        content = export_docx(title, sections, paper_meta=paper_meta, sources=sources)
+        ext = "docx"
+        media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     elif fmt == "pdf":
-        content = export_pdf(title, sections)
-        return Response(
-            content=content,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="{safe_title}.pdf"'}
-        )
+        content = export_pdf(title, sections, paper_meta=paper_meta, sources=sources)
+        ext = "pdf"
+        media_type = "application/pdf"
     else:
-        content = export_markdown(title, sections)
-        return Response(
-            content=content,
-            media_type="text/markdown",
-            headers={"Content-Disposition": f'attachment; filename="{safe_title}.md"'}
+        content = export_markdown(title, sections, paper_meta=paper_meta, sources=sources)
+        ext = "md"
+        media_type = "text/markdown"
+
+    # Optionally save to disk and record in DB
+    if data.get("save_to_disk", True):
+        reports_dir = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "data", "reports", paper_id
         )
+        os.makedirs(reports_dir, exist_ok=True)
+
+        # Determine version: count existing exports of this format
+        existing = [
+            e for e in (get_paper_exports(paper_id) or []) if e.get("format") == fmt
+        ]
+        version = len(existing) + 1
+
+        file_path = os.path.join(reports_dir, f"research_paper_v{version}.{ext}")
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        export_record = {
+            "id": str(uuid.uuid4()),
+            "paper_id": paper_id,
+            "format": fmt,
+            "file_path": file_path,
+            "file_size": len(content),
+            "version": version,
+            "citation_style": paper_meta.get("citation_style", "APA 7"),
+            "created_at": datetime.utcnow().isoformat(),
+        }
+        save_paper_export(export_record)
+
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_title}.{ext}"'},
+    )
+
+
+@app.get("/api/papers/{paper_id}/downloads")
+async def list_paper_downloads(paper_id: str):
+    """
+    Return all export records for a paper, with human-readable file sizes
+    and file-existence checks.
+    """
+    paper = get_paper(paper_id)
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+
+    raw_exports = get_paper_exports(paper_id) or []
+
+    def _human_size(size_bytes: int) -> str:
+        if size_bytes < 1024:
+            return f"{size_bytes} B"
+        elif size_bytes < 1024 ** 2:
+            return f"{size_bytes / 1024:.1f} KB"
+        else:
+            return f"{size_bytes / 1024 ** 2:.1f} MB"
+
+    exports = []
+    for rec in raw_exports:
+        file_path = rec.get("file_path", "")
+        file_exists = os.path.isfile(file_path)
+        file_size = rec.get("file_size", 0)
+        # Re-read size from disk if file still exists (in case it was regenerated)
+        if file_exists:
+            try:
+                file_size = os.path.getsize(file_path)
+            except OSError:
+                pass
+
+        exports.append({
+            "id": rec["id"],
+            "format": rec["format"],
+            "file_size": file_size,
+            "file_size_human": _human_size(file_size),
+            "version": rec.get("version", 1),
+            "citation_style": rec.get("citation_style", ""),
+            "created_at": rec["created_at"],
+            "file_exists": file_exists,
+        })
+
+    return {"paper_id": paper_id, "exports": exports}
+
+
+@app.get("/api/papers/{paper_id}/download/{fmt}")
+async def download_paper_file(paper_id: str, fmt: str):
+    """
+    Serve the latest saved export file for the given format.
+    Supported: pdf, docx, markdown (or md).
+    """
+    paper = get_paper(paper_id)
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+
+    normalised = fmt.lower()
+    if normalised == "md":
+        normalised = "markdown"
+
+    if normalised not in ("pdf", "docx", "markdown"):
+        raise HTTPException(status_code=400, detail="Unsupported format")
+
+    record = get_latest_export_by_format(paper_id, normalised)
+    if not record:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No saved {normalised} export found. Generate one first."
+        )
+
+    file_path = record.get("file_path", "")
+    if not os.path.isfile(file_path):
+        raise HTTPException(
+            status_code=404,
+            detail="Export file not found on disk. Please regenerate."
+        )
+
+    media_types = {
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "markdown": "text/markdown",
+    }
+    ext_map = {"pdf": "pdf", "docx": "docx", "markdown": "md"}
+    safe_title = "".join(
+        c if c.isalnum() or c in " -_" else "_"
+        for c in paper.get("title", "paper")
+    )[:60]
+
+    return FileResponse(
+        path=file_path,
+        media_type=media_types[normalised],
+        filename=f"{safe_title}.{ext_map[normalised]}",
+    )
+
+
+@app.get("/api/papers/{paper_id}/preview")
+async def preview_paper(paper_id: str):
+    """
+    Return structured JSON preview of a paper: title, sections, word count,
+    sources count, and citation style.
+    """
+    paper = get_paper(paper_id)
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+
+    sections = get_paper_sections(paper_id)
+    sources = get_paper_sources(paper_id)
+    total_words = sum(s.get("word_count", 0) for s in sections)
+
+    return {
+        "paper_id": paper_id,
+        "title": paper.get("title", ""),
+        "sections": [
+            {
+                "id": s["id"],
+                "section_key": s["section_key"],
+                "title": s["title"],
+                "word_count": s.get("word_count", 0),
+                "status": s.get("status", "pending"),
+                "order_index": s.get("order_index", 0),
+            }
+            for s in sections
+        ],
+        "sources_count": len(sources),
+        "word_count": total_words,
+        "citation_style": paper.get("citation_style", "APA 7"),
+    }

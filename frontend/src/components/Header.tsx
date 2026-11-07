@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Lock, FileUp, History, Plus, Menu, Terminal, Shield, GraduationCap } from "lucide-react";
+import { FileUp, History, Plus, Menu, Shield, GraduationCap, Sparkles } from "lucide-react";
 
 interface HeaderProps {
   onOpenHistory: () => void;
@@ -29,93 +29,95 @@ export const Header: React.FC<HeaderProps> = ({
   backendHealth,
 }) => {
   const modelName = backendHealth?.ollama?.model || "qwen3.5:latest";
-  const dossierId = activeSessionId ? `REF-${activeSessionId.slice(0, 8).toUpperCase()}` : "REF-ACTIVE-01";
   const modeDisplay = mode
     ? mode === "deep"
-      ? "Deep Archival"
+      ? "Deep Research"
       : mode === "quick"
-      ? "Rapid Synthesis"
-      : "Corpus Parsing"
-    : "Statutory Corroboration";
+      ? "Quick Research"
+      : "Document Research"
+    : "Research Mode";
 
   return (
     <header className="fixed top-0 left-0 w-full z-30 md:pl-72 bg-[#101319] border-b border-[#222735]">
       <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 h-12">
-        {/* Left: Mobile Toggle & Telemetry Ribbon */}
-        <div className="flex items-center gap-3 overflow-x-auto py-1 text-xs font-mono">
+        {/* Left: Mobile Toggle & Status */}
+        <div className="flex items-center gap-3 text-xs font-mono">
           {/* Mobile hamburger button */}
           <button
             onClick={onToggleMobileMenu}
-            className="md:hidden p-1 text-[#dbc2b0] hover:text-[#e1e2eb] border border-[#222735] bg-[#0b0e14]"
-            aria-label="Open docket menu"
+            className="md:hidden p-1 text-[#dbc2b0] hover:text-[#e1e2eb] border border-[#222735] bg-[#0b0e14] rounded-sm cursor-pointer"
+            aria-label="Open menu"
           >
             <Menu className="w-4 h-4" />
           </button>
 
-          {/* Dossier Code */}
-          <span className="text-[#4edea3] tracking-wider uppercase flex items-center gap-1.5 shrink-0">
-            <span className="inline-block w-1.5 h-1.5 bg-[#4edea3]"></span>
-            <span>Dossier: {dossierId}</span>
-          </span>
+          {/* Active Session Status */}
+          {activeSessionId ? (
+            <span className="text-[#4edea3] tracking-wider uppercase flex items-center gap-1.5 shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse" />
+              <span>Session: Active</span>
+            </span>
+          ) : (
+            <span className="text-[#a38c7c] tracking-wider uppercase flex items-center gap-1.5 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ffb77d]" />
+              <span>Ready</span>
+            </span>
+          )}
 
-          {/* Mode telemetry */}
-          <span className="text-[#dbc2b0] border-l border-[#222735] pl-3 hidden sm:inline shrink-0">
-            Mode: {modeDisplay}
-          </span>
+          {/* Mode label */}
+          {activeSessionId && (
+            <span className="text-[#dbc2b0] border-l border-[#222735] pl-3 hidden sm:inline shrink-0">
+              {modeDisplay}
+            </span>
+          )}
 
-          {/* Latency & Zero Cost */}
+          {/* Privacy & Zero Cost */}
           <span className="text-[#a38c7c] border-l border-[#222735] pl-3 hidden lg:inline shrink-0">
-            Audit Footprint: ₹0 / Offline
+            Local AI &bull; ₹0 Cost
           </span>
         </div>
 
-        {/* Right: Action Cluster */}
+        {/* Right: Quick Action Buttons */}
         <div className="flex items-center gap-2 font-mono text-xs">
           {onNewResearch && (
             <button
               onClick={onNewResearch}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-none cursor-pointer"
-              title="New Research Query"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#ffb77d] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+              title="Start a new research query"
             >
               <Plus className="w-3.5 h-3.5 text-[#ffb77d]" />
-              <span className="hidden sm:inline">New Query</span>
-            </button>
-          )}
-
-          {onOpenPaperStudio && (
-            <button
-              onClick={onOpenPaperStudio}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#ffb77d]/40 hover:border-[#ffb77d] text-[#ffb77d] transition-none cursor-pointer"
-              title="AI Research Paper Generator Studio"
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-[#ffb77d]" />
-              <span className="hidden sm:inline">Paper Studio</span>
+              <span className="hidden sm:inline">New Research</span>
             </button>
           )}
 
           <button
             onClick={onOpenDocuments}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-none cursor-pointer"
-            title="Upload Document into Ingestion Corpus"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+            title="Upload a document for research"
           >
             <FileUp className="w-3.5 h-3.5 text-[#ffb77d]" />
-            <span className="hidden md:inline">Ingest Corpus</span>
+            <span className="hidden md:inline">Documents</span>
           </button>
 
           <button
             onClick={onOpenHistory}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-none cursor-pointer"
-            title="Open Historical Docket Archive"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+            title="View past research sessions"
           >
             <History className="w-3.5 h-3.5 text-[#b9c8de]" />
-            <span className="hidden md:inline">Archive</span>
+            <span className="hidden md:inline">History</span>
           </button>
 
-          {/* Archival Seal Marker */}
-          <div className="border-l border-[#222735] pl-2.5 ml-1 flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-[#a38c7c]" />
-            <span className="text-[11px] text-[#a38c7c] hidden xl:inline">SEAL: CAO-098</span>
-          </div>
+          {onOpenPaperStudio && (
+            <button
+              onClick={onOpenPaperStudio}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#ffb77d]/40 hover:border-[#ffb77d] text-[#ffb77d] transition-colors cursor-pointer rounded-sm"
+              title="Open Research Paper Studio"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-[#ffb77d]" />
+              <span className="hidden sm:inline">Paper Studio</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

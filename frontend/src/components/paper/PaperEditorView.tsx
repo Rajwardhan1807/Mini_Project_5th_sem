@@ -31,6 +31,7 @@ import {
   PaperSource,
   OriginalityFinding,
   OriginalityReport,
+  ExportMeta,
   paperApi
 } from "@/lib/api";
 import { PaperOriginalityModal } from "./PaperOriginalityModal";
@@ -43,7 +44,7 @@ interface PaperEditorViewProps {
   onRegenerateSection: (sectionKey: string) => Promise<void>;
   onTransformSection: (sectionKey: string, action: "clarity" | "expand" | "shorten") => Promise<void>;
   onChangeCitationStyle: (style: string) => Promise<void>;
-  onExport: (format: "markdown" | "docx" | "pdf") => Promise<void>;
+  onExport: (format: "markdown" | "docx" | "pdf", meta?: ExportMeta) => Promise<void>;
   onSaveRevision: (label?: string) => Promise<void>;
   onRestoreRevision: (revId: string) => Promise<void>;
   onRefreshPaper: () => Promise<void>;

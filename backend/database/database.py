@@ -1,8 +1,12 @@
 import sqlite3
 import json
 import os
-from datetime import datetime
+import uuid
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
+
+def _utcnow_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 DB_PATH = os.environ.get("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "../../data/researchforge.db"))
 
@@ -235,6 +239,22 @@ def init_db():
     """)
     # ── End paper tables ───────────────────────────────────────────────────
 
+    # ── Paper Export Records ───────────────────────────────────────────────
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS paper_exports (
+        id TEXT PRIMARY KEY,
+        paper_id TEXT NOT NULL,
+        format TEXT NOT NULL,
+        file_path TEXT NOT NULL,
+        file_size INTEGER DEFAULT 0,
+        version INTEGER DEFAULT 1,
+        citation_style TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (paper_id) REFERENCES papers(id)
+    )
+    """)
+    # ── End export table ───────────────────────────────────────────────────
+
     conn.commit()
     conn.close()
 
@@ -256,7 +276,7 @@ def save_session(session_data: Dict[str, Any]):
         json.dumps(session_data.get("agents", {})),
         session_data.get("current_step", ""),
         session_data.get("error_message", None),
-        session_data.get("created_at") or datetime.utcnow().isoformat(),
+        session_data.get("created_at") or _utcnow_iso(),
         session_data.get("completed_at", None)
     ))
     conn.commit()
@@ -385,7 +405,7 @@ def save_report(report_data: Dict[str, Any]):
         report_data.get("limitations", ""),
         report_data.get("conclusion", ""),
         report_data.get("full_markdown", ""),
-        report_data.get("created_at", datetime.utcnow().isoformat())
+        report_data.get("created_at", _utcnow_iso())
     ))
     conn.commit()
     conn.close()
@@ -408,7 +428,7 @@ def save_timeline_event(research_id: str, agent: str, step: str, detail: str = "
     cursor.execute("""
     INSERT INTO timeline_events (research_id, agent, step, detail, timestamp)
     VALUES (?, ?, ?, ?, ?)
-    """, (research_id, agent, step, detail, datetime.utcnow().isoformat()))
+    """, (research_id, agent, step, detail, _utcnow_iso()))
     conn.commit()
     conn.close()
 
@@ -434,7 +454,7 @@ def save_document(doc_data: Dict[str, Any]):
         doc_data.get("page_count", 1),
         doc_data.get("processed_status", "uploaded"),
         doc_data.get("extracted_text", ""),
-        doc_data.get("uploaded_at", datetime.utcnow().isoformat())
+        doc_data.get("uploaded_at", _utcnow_iso())
     ))
     conn.commit()
     conn.close()
@@ -455,7 +475,7 @@ init_db()
 def save_paper(paper: Dict[str, Any]):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = _utcnow_iso()
     cursor.execute("""
     INSERT OR REPLACE INTO papers
     (id, title, research_question, objectives, field, paper_type, citation_style,
@@ -555,7 +575,7 @@ def get_paper_sources(paper_id: str) -> List[Dict[str, Any]]:
 def save_paper_section(sec: Dict[str, Any]):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = _utcnow_iso()
     cursor.execute("""
     INSERT OR REPLACE INTO paper_sections
     (id, paper_id, section_key, title, content, word_count, order_index, status, updated_at)
@@ -579,7 +599,7 @@ def get_paper_sections(paper_id: str) -> List[Dict[str, Any]]:
 def save_paper_job(job: Dict[str, Any]):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = _utcnow_iso()
     cursor.execute("""
     INSERT OR REPLACE INTO paper_jobs
     (id, paper_id, job_type, status, stage, progress, error, created_at, updated_at)
@@ -612,7 +632,7 @@ def get_latest_paper_job(paper_id: str) -> Optional[Dict[str, Any]]:
 def save_originality_finding(finding: Dict[str, Any]):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = _utcnow_iso()
     cursor.execute("""
     INSERT OR REPLACE INTO paper_originality
     (id, paper_id, passage, matched_source, matched_url, similarity_note,
@@ -647,7 +667,7 @@ def clear_originality_findings(paper_id: str):
 def save_paper_revision(rev: Dict[str, Any]):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = _utcnow_iso()
     cursor.execute("""
     INSERT INTO paper_revisions (id, paper_id, revision_label, snapshot_json, created_at)
     VALUES (?, ?, ?, ?, ?)
@@ -684,3 +704,64 @@ def get_paper_revision(revision_id: str) -> Optional[Dict[str, Any]]:
         except Exception:
             pass
     return d
+
+
+# ── Paper Export Records ───────────────────────────────────────────────────────
+
+def save_paper_export(export: Dict[str, Any]):
+    """Insert or replace a paper export record."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now = _utcnow_iso()
+    cursor.execute("""
+    INSERT OR REPLACE INTO paper_exports
+    (id, paper_id, format, file_path, file_size, version, citation_style, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        export["id"],
+        export["paper_id"],
+        export["format"],
+        export["file_path"],
+        export.get("file_size", 0),
+        export.get("version", 1),
+        export.get("citation_style", "APA 7"),
+        export.get("created_at", now),
+    ))
+    conn.commit()
+    conn.close()
+
+
+def get_paper_exports(paper_id: str) -> List[Dict[str, Any]]:
+    """Get all export records for a paper, ordered by created_at DESC."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM paper_exports WHERE paper_id = ? ORDER BY created_at DESC",
+        (paper_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_paper_export(export_id: str) -> Optional[Dict[str, Any]]:
+    """Get a single export record by its id."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM paper_exports WHERE id = ?", (export_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_latest_export_by_format(paper_id: str, format: str) -> Optional[Dict[str, Any]]:
+    """Get the most recent export of a given format for a paper."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM paper_exports WHERE paper_id = ? AND format = ? ORDER BY created_at DESC LIMIT 1",
+        (paper_id, format),
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None

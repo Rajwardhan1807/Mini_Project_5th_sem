@@ -23,13 +23,16 @@ import {
 } from "@/lib/api";
 import {
   FileText,
-  ShieldAlert,
   FolderOpen,
   ArrowLeft,
   Plus,
   Loader2,
   GitCompare,
-  FileCheck2
+  FileCheck2,
+  Download,
+  Calendar,
+  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 
 export default function Home() {
@@ -42,8 +45,12 @@ export default function Home() {
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
 
   // Navigation state
-  const [activeDocketTab, setActiveDocketTab] = useState<DocketTab>("briefing");
+  const [activeDocketTab, setActiveDocketTab] = useState<DocketTab>("home");
   const [activeSubTab, setActiveSubTab] = useState<"report" | "claims" | "sources">("report");
+
+  // All completed sessions for "My Reports" view
+  const [allSessions, setAllSessions] = useState<ResearchSession[]>([]);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -53,12 +60,20 @@ export default function Home() {
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  // Initial Health Check
+  // Initial Health & History Check
   useEffect(() => {
     api.getHealth()
       .then((h) => setHealth(h))
       .catch((e) => console.error("Health check error:", e));
+
+    loadAllSessions();
   }, []);
+
+  const loadAllSessions = () => {
+    api.getHistory()
+      .then((sess) => setAllSessions(sess))
+      .catch(() => {});
+  };
 
   // Fetch full session data
   const loadFullSession = async (id: string) => {
@@ -128,6 +143,7 @@ export default function Home() {
         } else if (data.type === "completed") {
           setIsLoading(false);
           loadFullSession(researchId);
+          loadAllSessions();
           sse.close();
         } else if (data.type === "error") {
           setIsLoading(false);
@@ -164,6 +180,7 @@ export default function Home() {
         if (sess.status === "completed" || sess.status === "failed") {
           setIsLoading(false);
           loadFullSession(activeSessionId);
+          loadAllSessions();
           clearInterval(interval);
         }
       } catch (e) {
@@ -186,7 +203,7 @@ export default function Home() {
     setClaims([]);
     setReport(null);
     setTimelineEvents([]);
-    setActiveDocketTab("briefing");
+    setActiveDocketTab("home");
     setActiveSubTab("report");
 
     try {
@@ -227,7 +244,7 @@ export default function Home() {
 
   const handleDocumentReady = (docId: string, filename: string) => {
     handleStartResearch(
-      `Document Analysis & Evidence Extraction: ${filename}`,
+      `Document Analysis: ${filename}`,
       "document",
       [docId]
     );
@@ -235,7 +252,7 @@ export default function Home() {
 
   const handleSelectHistorySession = (id: string) => {
     setActiveSessionId(id);
-    setActiveDocketTab("briefing");
+    setActiveDocketTab("home");
     loadFullSession(id);
   };
 
@@ -250,10 +267,38 @@ export default function Home() {
     setReport(null);
     setTimelineEvents([]);
     setIsLoading(false);
-    setActiveDocketTab("briefing");
+    setActiveDocketTab("home");
+  };
+
+  const handleDownloadSessionPdf = async (sessId: string, title: string) => {
+    setDownloadingReportId(sessId);
+    try {
+      const blob = await api.downloadResearchReport(sessId, "pdf");
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeTitle = title.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 35) || "Report";
+      a.download = `ResearchForge_${safeTitle}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert("PDF download failed: " + (err.message || "Unknown error"));
+    } finally {
+      setDownloadingReportId(null);
+    }
   };
 
   const handleDocketSelect = (tab: DocketTab) => {
+    if (tab === "home") {
+      setActiveDocketTab("home");
+      return;
+    }
+    if (tab === "new_research") {
+      handleResetToHome();
+      return;
+    }
     if (tab === "documents") {
       setIsDocumentModalOpen(true);
       return;
@@ -262,8 +307,13 @@ export default function Home() {
       setIsHistoryOpen(true);
       return;
     }
-    if (tab === "system") {
+    if (tab === "settings") {
       setIsSystemModalOpen(true);
+      return;
+    }
+    if (tab === "reports") {
+      loadAllSessions();
+      setActiveDocketTab("reports");
       return;
     }
     setActiveDocketTab(tab);
@@ -273,7 +323,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#08090b] text-[#e1e2eb] font-sans antialiased flex flex-col">
-      {/* Archival Sidebar */}
+      {/* Clean Simplified Sidebar */}
       <ArchivalSidebar
         activeTab={activeDocketTab}
         onSelectTab={handleDocketSelect}
@@ -298,181 +348,283 @@ export default function Home() {
         backendHealth={health}
       />
 
-      {/* Main Editorial Canvas */}
+      {/* Main Content Area */}
       <main className="md:pl-72 pt-12 min-h-screen flex-1 flex flex-col bg-[#08090b]">
         {activeDocketTab === "paper_studio" ? (
-          <PaperStudio onBackToArchival={() => setActiveDocketTab("briefing")} />
-        ) : (
-          <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-            {/* VIEW 1: Current Briefing */}
-            {activeDocketTab === "briefing" && (
-            <>
-              {!isResearchActive ? (
-                /* Research Home Screen */
-                <HeroSection onStartResearch={handleStartResearch} isLoading={isLoading} />
-              ) : (
-                /* Active Research Docket */
-                <div className="space-y-6">
-                  {/* Top Dossier Title & Navigation Banner */}
-                  <div className="p-4 sm:p-5 bg-[#0b0e14] border border-[#222735] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <button
-                        onClick={handleResetToHome}
-                        className="p-1.5 border border-[#222735] bg-[#101319] hover:border-[#a38c7c] text-[#a38c7c] hover:text-[#f1f5f9] transition-none cursor-pointer mt-0.5 shrink-0"
-                        title="Back to Home / Formulate New Query"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                      </button>
-                      <div>
-                        <div className="flex items-center gap-2 font-mono text-[11px]">
-                          <span className="text-[#ffb77d] uppercase px-1.5 py-0.2 border border-[#d97706]/40 bg-[#d97706]/10 font-bold">
-                            {session?.mode} mode
+          <PaperStudio onBackToArchival={() => setActiveDocketTab("home")} />
+        ) : activeDocketTab === "reports" ? (
+          /* ── My Reports View ─────────────────────────────────────────────── */
+          <div className="max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+            <div className="border border-[#222735] bg-[#0b0e14] p-6 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#ffb77d] mb-1">
+                  <FileCheck2 className="w-4 h-4 text-[#ffb77d]" />
+                  <span>My Reports</span>
+                </div>
+                <h1 className="font-serif text-2xl sm:text-3xl text-[#f1f5f9] font-normal">
+                  Completed Research Reports
+                </h1>
+                <p className="text-sm text-[#dbc2b0] mt-1 max-w-xl">
+                  Browse, review, and download PDF reports for all completed research sessions.
+                </p>
+              </div>
+
+              <button
+                onClick={handleResetToHome}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer rounded-sm shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Start New Research</span>
+              </button>
+            </div>
+
+            {/* Reports List */}
+            {allSessions.filter((s) => s.status === "completed").length === 0 ? (
+              <div className="p-12 border border-[#222735] bg-[#0e1117] text-center space-y-3 font-mono rounded-sm">
+                <FileCheck2 className="w-8 h-8 text-[#a38c7c] mx-auto" />
+                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">
+                  No Completed Reports Yet
+                </h3>
+                <p className="text-xs text-[#a38c7c] max-w-md mx-auto">
+                  Start a research query from the home screen. Once the research process completes, your report will appear here.
+                </p>
+                <button
+                  onClick={handleResetToHome}
+                  className="mt-2 px-4 py-2 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer rounded-sm"
+                >
+                  Start First Research
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allSessions
+                  .filter((s) => s.status === "completed")
+                  .map((sess) => (
+                    <article
+                      key={sess.id}
+                      className="border border-[#222735] hover:border-[#32353c] bg-[#0e1117] p-5 rounded-sm flex flex-col justify-between space-y-4 transition-colors"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[#ffb77d] uppercase px-2 py-0.5 border border-[#d97706]/40 bg-[#d97706]/10 rounded-sm">
+                            {sess.mode} Research
                           </span>
-                          <span className="text-[#a38c7c]">
-                            REF-{session?.id.slice(0, 8).toUpperCase()}
+                          <span className="text-[#a38c7c] flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(sess.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <h1 className="font-serif text-xl sm:text-2xl text-[#f1f5f9] mt-1 tracking-tight font-medium">
-                          {session?.query}
-                        </h1>
+
+                        <h3 className="font-serif text-lg text-[#f1f5f9] font-medium leading-snug">
+                          {sess.query}
+                        </h3>
+
+                        <div className="flex items-center gap-3 text-xs font-mono text-[#a38c7c] pt-1">
+                          <span>{sess.statistics?.sources_relevant || 0} sources</span>
+                          <span>&bull;</span>
+                          <span className="text-[#4edea3]">
+                            {sess.confidence ? `${Math.round(sess.confidence)}% confidence` : "Verified"}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Download & View Actions */}
+                      <div className="pt-3 border-t border-[#222735] flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => handleSelectHistorySession(sess.id)}
+                          className="px-3 py-1.5 bg-[#14171e] hover:bg-[#1d2026] border border-[#222735] hover:border-[#ffb77d] text-[#e1e2eb] font-mono text-xs transition-colors cursor-pointer rounded-sm"
+                        >
+                          View Report
+                        </button>
+
+                        <button
+                          onClick={() => handleDownloadSessionPdf(sess.id, sess.query)}
+                          disabled={downloadingReportId === sess.id}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer rounded-sm disabled:opacity-50"
+                        >
+                          {downloadingReportId === sess.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Generating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download PDF</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+            {!isResearchActive ? (
+              /* ── Redesigned Home Screen ─────────────────────────────────── */
+              <HeroSection
+                onStartResearch={handleStartResearch}
+                isLoading={isLoading}
+                onOpenDocuments={() => setIsDocumentModalOpen(true)}
+                onSelectSession={handleSelectHistorySession}
+                onOpenPaperStudio={() => setActiveDocketTab("paper_studio")}
+              />
+            ) : (
+              /* ── Active Research Dossier ────────────────────────────────── */
+              <div className="space-y-6">
+                {/* Top Dossier Title & Navigation Banner */}
+                <div className="p-4 sm:p-5 bg-[#0b0e14] border border-[#222735] flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-sm">
+                  <div className="flex items-start gap-3">
+                    <button
+                      onClick={handleResetToHome}
+                      className="p-1.5 border border-[#222735] bg-[#101319] hover:border-[#ffb77d] text-[#a38c7c] hover:text-[#f1f5f9] transition-colors cursor-pointer mt-0.5 shrink-0 rounded-sm"
+                      title="Back to Home"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                      <div className="flex items-center gap-2 font-mono text-[11px]">
+                        <span className="text-[#ffb77d] uppercase px-2 py-0.5 border border-[#d97706]/40 bg-[#d97706]/10 font-bold rounded-sm">
+                          {session?.mode} Research
+                        </span>
+                        <span className="text-[#a38c7c]">
+                          Ref: {session?.id.slice(0, 12)}
+                        </span>
+                      </div>
+                      <h1 className="font-serif text-xl sm:text-2xl text-[#f1f5f9] mt-1 tracking-tight font-medium">
+                        {session?.query}
+                      </h1>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Quick Download PDF button if report is already available */}
+                    {report && (
+                      <button
+                        onClick={() => session && handleDownloadSessionPdf(session.id, session.query)}
+                        disabled={downloadingReportId === session?.id}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer rounded-sm disabled:opacity-50"
+                        title="Download complete research report as PDF"
+                      >
+                        {downloadingReportId === session?.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>PDF...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download PDF</span>
+                          </>
+                        )}
+                      </button>
+                    )}
 
                     <button
                       onClick={handleResetToHome}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#f1f5f9] transition-none font-mono text-xs uppercase cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#a38c7c] text-[#f1f5f9] transition-colors font-mono text-xs uppercase cursor-pointer rounded-sm"
                     >
                       <Plus className="w-3.5 h-3.5 text-[#ffb77d]" />
-                      <span>New Query</span>
+                      <span>New Research</span>
                     </button>
                   </div>
-
-                  {/* Agent Pipeline Sequential Topology */}
-                  {session && (
-                    <AgentTimeline
-                      agents={session.agents}
-                      events={timelineEvents}
-                      currentStep={session.current_step}
-                    />
-                  )}
-
-                  {/* High-Density Telemetry Strip */}
-                  {session && (
-                    <MetricsBar
-                      statistics={session.statistics}
-                      modelName={health?.ollama?.model}
-                    />
-                  )}
-
-                  {/* Operational Sub-Tabs */}
-                  <div className="border-b border-[#222735] flex items-center gap-4 text-xs font-mono">
-                    <button
-                      onClick={() => setActiveSubTab("report")}
-                      className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-none cursor-pointer ${
-                        activeSubTab === "report"
-                          ? "border-[#ffb77d] text-[#ffb77d] font-bold"
-                          : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
-                      }`}
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Epistemic Ledger</span>
-                      {report && <span className="text-[#4edea3] font-bold">●</span>}
-                    </button>
-
-                    <button
-                      onClick={() => setActiveSubTab("claims")}
-                      className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-none cursor-pointer ${
-                        activeSubTab === "claims"
-                          ? "border-[#ffb77d] text-[#ffb77d] font-bold"
-                          : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
-                      }`}
-                    >
-                      <GitCompare className="w-3.5 h-3.5" />
-                      <span>Contradiction Matrix ({claims.length})</span>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveSubTab("sources")}
-                      className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-none cursor-pointer ${
-                        activeSubTab === "sources"
-                          ? "border-[#ffb77d] text-[#ffb77d] font-bold"
-                          : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
-                      }`}
-                    >
-                      <FolderOpen className="w-3.5 h-3.5" />
-                      <span>Primary Sources ({sources.length})</span>
-                    </button>
-                  </div>
-
-                  {/* Active Sub-Tab View */}
-                  {activeSubTab === "report" && (
-                    <div>
-                      {report ? (
-                        <ReportView report={report} query={session?.query || ""} />
-                      ) : (
-                        <div className="p-10 border border-[#222735] bg-[#0e1117] text-center space-y-3 font-mono">
-                          <Loader2 className="w-6 h-6 text-[#ffb77d] animate-spin mx-auto" />
-                          <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">
-                            Writer Agent Synthesizing Epistemic Ledger...
-                          </h3>
-                          <p className="text-xs text-[#a38c7c] max-w-md mx-auto">
-                            Corroborating citations, formatting key empirical assertions, and calculating
-                            mathematical confidence scores.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {activeSubTab === "claims" && (
-                    <ClaimConflictExplorer claims={claims} />
-                  )}
-
-                  {activeSubTab === "sources" && (
-                    <SourceExplorer sources={sources} />
-                  )}
                 </div>
-              )}
-            </>
-          )}
 
-          {/* VIEW 2: Primary Source Registry */}
-          {activeDocketTab === "sources" && (
-            <SourceExplorer sources={sources} />
-          )}
+                {/* Step 4: Simple, Clear Research Progress Timeline */}
+                {session && (
+                  <AgentTimeline
+                    agents={session.agents}
+                    events={timelineEvents}
+                    currentStep={session.current_step}
+                  />
+                )}
 
-          {/* VIEW 3: Contradiction Matrix */}
-          {activeDocketTab === "contradictions" && (
-            <ClaimConflictExplorer claims={claims} />
-          )}
+                {/* Metrics Summary Strip */}
+                {session && (
+                  <MetricsBar
+                    statistics={session.statistics}
+                    modelName={health?.ollama?.model}
+                  />
+                )}
 
-          {/* VIEW 4: Epistemic Ledger (Report) */}
-          {activeDocketTab === "report" && (
-            <div>
-              {report ? (
-                <ReportView report={report} query={session?.query || ""} />
-              ) : (
-                <div className="p-12 border border-[#222735] bg-[#0e1117] text-center space-y-3 font-mono">
-                  <FileCheck2 className="w-8 h-8 text-[#a38c7c] mx-auto" />
-                  <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">
-                    No Epistemic Ledger Compiled Yet
-                  </h3>
-                  <p className="text-xs text-[#a38c7c] max-w-md mx-auto">
-                    Initiate a research docket from the home terminal or select an archived session to review
-                    the synthesized report.
-                  </p>
+                {/* Operational Sub-Tabs */}
+                <div className="border-b border-[#222735] flex items-center gap-4 text-xs font-mono">
                   <button
-                    onClick={() => setActiveDocketTab("briefing")}
-                    className="mt-2 px-4 py-2 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold text-xs uppercase tracking-wider transition-none cursor-pointer"
+                    onClick={() => setActiveSubTab("report")}
+                    className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      activeSubTab === "report"
+                        ? "border-[#ffb77d] text-[#ffb77d] font-bold"
+                        : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
+                    }`}
                   >
-                    Open Research Briefing
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Research Report</span>
+                    {report && <span className="text-[#4edea3] font-bold">&bull; Ready</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveSubTab("claims")}
+                    className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      activeSubTab === "claims"
+                        ? "border-[#ffb77d] text-[#ffb77d] font-bold"
+                        : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
+                    }`}
+                  >
+                    <GitCompare className="w-3.5 h-3.5" />
+                    <span>Fact-Checking &amp; Conflicts ({claims.length})</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveSubTab("sources")}
+                    className={`pb-2.5 border-b-2 uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      activeSubTab === "sources"
+                        ? "border-[#ffb77d] text-[#ffb77d] font-bold"
+                        : "border-transparent text-[#a38c7c] hover:text-[#f1f5f9]"
+                    }`}
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    <span>Sources &amp; Evidence ({sources.length})</span>
                   </button>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+
+                {/* Active Sub-Tab View */}
+                {activeSubTab === "report" && (
+                  <div>
+                    {report ? (
+                      <ReportView
+                        report={report}
+                        query={session?.query || ""}
+                        researchId={session?.id}
+                        sources={sources}
+                        claims={claims}
+                      />
+                    ) : (
+                      <div className="p-10 border border-[#222735] bg-[#0e1117] text-center space-y-3 font-mono rounded-sm">
+                        <Loader2 className="w-6 h-6 text-[#ffb77d] animate-spin mx-auto" />
+                        <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">
+                          Preparing Your Research Report...
+                        </h3>
+                        <p className="text-xs text-[#a38c7c] max-w-md mx-auto">
+                          Our Writer Agent is currently synthesizing collected findings, cross-checking facts, and formatting the downloadable report.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeSubTab === "claims" && (
+                  <ClaimConflictExplorer claims={claims} />
+                )}
+
+                {activeSubTab === "sources" && (
+                  <SourceExplorer sources={sources} />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Modals & Drawers */}

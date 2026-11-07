@@ -175,6 +175,23 @@ export const api = {
 
   getStreamUrl(id: string): string {
     return `${API_BASE}/api/research/${id}/stream`;
+  },
+
+  async downloadResearchReport(id: string, format: "pdf" | "markdown" = "pdf"): Promise<Blob> {
+    const res = await fetch(`${API_BASE}/api/research/${id}/export`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ format }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to download report" }));
+      throw new Error(err.detail || "Failed to download report");
+    }
+    return res.blob();
+  },
+
+  getResearchReportDownloadUrl(id: string, format: string = "pdf"): string {
+    return `${API_BASE}/api/research/${id}/download/${format}`;
   }
 };
 
@@ -279,6 +296,35 @@ export interface PaperJob {
   updated_at: string;
 }
 
+export interface ExportRecord {
+  id: string;
+  format: string;
+  file_size: number;
+  file_size_human: string;
+  version: number;
+  citation_style: string;
+  created_at: string;
+  file_exists: boolean;
+}
+
+export interface ExportRecord {
+  id: string;
+  format: string;
+  file_size: number;
+  file_size_human: string;
+  version: number;
+  citation_style: string;
+  created_at: string;
+  file_exists: boolean;
+}
+
+export interface ExportMeta {
+  author_name?: string;
+  institution?: string;
+  department?: string;
+  submission_date?: string;
+}
+
 export const paperApi = {
   async createPaper(data: Partial<Paper>): Promise<Paper> {
     const res = await fetch(`${API_BASE}/api/papers`, {
@@ -364,8 +410,10 @@ export const paperApi = {
     return res.json();
   },
 
-  async regenerateSection(paperId: string, sectionKey: string): Promise<void> {
-    await fetch(`${API_BASE}/api/papers/${paperId}/sections/${sectionKey}/regenerate`, { method: "POST" });
+  async regenerateSection(paperId: string, sectionKey: string): Promise<PaperSection> {
+    const res = await fetch(`${API_BASE}/api/papers/${paperId}/sections/${sectionKey}/regenerate`, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to regenerate section");
+    return res.json();
   },
 
   async transformSection(paperId: string, sectionKey: string, action: "clarity" | "expand" | "shorten"): Promise<PaperSection> {
@@ -438,13 +486,54 @@ export const paperApi = {
   },
 
   async exportPaper(id: string, format: "markdown" | "docx" | "pdf"): Promise<Blob> {
+    return this.exportPaperWithMeta(id, format, {});
+  },
+
+  async exportPaperWithMeta(
+    id: string,
+    format: "markdown" | "docx" | "pdf",
+    meta: {
+      author_name?: string;
+      institution?: string;
+      department?: string;
+      submission_date?: string;
+    }
+  ): Promise<Blob> {
     const res = await fetch(`${API_BASE}/api/papers/${id}/export`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ format }),
+      body: JSON.stringify({ format, ...meta, save_to_disk: true }),
     });
-    if (!res.ok) throw new Error("Export failed");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Export failed" }));
+      throw new Error(err.detail || "Export failed");
+    }
     return res.blob();
+  },
+
+  async getDownloads(
+    paperId: string
+  ): Promise<{ paper_id: string; exports: ExportRecord[] }> {
+    const res = await fetch(`${API_BASE}/api/papers/${paperId}/downloads`);
+    if (!res.ok) return { paper_id: paperId, exports: [] };
+    return res.json();
+  },
+
+  getDownloadUrl(paperId: string, format: string): string {
+    return `${API_BASE}/api/papers/${paperId}/download/${format}`;
+  },
+
+  async getPreview(paperId: string): Promise<{
+    paper_id: string;
+    title: string;
+    sections: Array<{ id: string; section_key: string; title: string; word_count: number; status: string; order_index: number }>;
+    sources_count: number;
+    word_count: number;
+    citation_style: string;
+  }> {
+    const res = await fetch(`${API_BASE}/api/papers/${paperId}/preview`);
+    if (!res.ok) throw new Error("Failed to load preview");
+    return res.json();
   },
 };
 

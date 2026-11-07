@@ -16,20 +16,23 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Download,
 } from "lucide-react";
 import {
   Paper,
   PaperSection,
   PaperSource,
   PaperJob,
-  paperApi
+  paperApi,
 } from "@/lib/api";
 import { PaperConfigView } from "./PaperConfigView";
 import { PaperPlanView } from "./PaperPlanView";
 import { PaperSourceView } from "./PaperSourceView";
 import { PaperEditorView } from "./PaperEditorView";
 import { PaperArchiveModal } from "./PaperArchiveModal";
+import { PaperExportPanel } from "./PaperExportPanel";
+import { ExportMeta } from "@/lib/api";
 
 interface PaperStudioProps {
   onBackToArchival?: () => void;
@@ -45,6 +48,7 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [activeJob, setActiveJob] = useState<PaperJob | null>(null);
   const [studioStage, setStudioStage] = useState<"config" | "plan" | "sources" | "editor">("config");
+  const [showExportPanel, setShowExportPanel] = useState(false);
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -106,6 +110,13 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
         const st = await paperApi.getPaperStatus(paperId);
         if (st.job) {
           setActiveJob(st.job);
+          if (st.job.stage?.startsWith("drafting")) {
+            // Live progressive load of drafted sections
+            const secs = await paperApi.getSections(paperId);
+            if (secs && secs.length > 0) {
+              setSections(secs);
+            }
+          }
           if (st.job.status === "done" || st.job.status === "failed") {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
             setIsLoading(false);
@@ -225,14 +236,13 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
     if (!currentPaperId) return;
     setIsLoading(true);
     try {
-      await paperApi.regenerateSection(currentPaperId, sectionKey);
-      // Wait slightly then reload
-      setTimeout(async () => {
-        const secs = await paperApi.getSections(currentPaperId);
-        setSections(secs);
-        setIsLoading(false);
-      }, 3500);
+      const updated = await paperApi.regenerateSection(currentPaperId, sectionKey);
+      setSections((prev) =>
+        prev.map((s) => (s.section_key === sectionKey ? updated : s))
+      );
     } catch (e) {
+      console.error("Failed to regenerate section:", e);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -254,21 +264,23 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
   };
 
   // Export Paper
-  const handleExport = async (format: "markdown" | "docx" | "pdf") => {
+  const handleExport = async (format: "markdown" | "docx" | "pdf", meta: ExportMeta = {}) => {
     if (!currentPaperId || !currentPaper) return;
     try {
-      const blob = await paperApi.exportPaper(currentPaperId, format);
+      const blob = await paperApi.exportPaperWithMeta(currentPaperId, format, meta);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       const safeTitle = currentPaper.title.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 40);
-      a.download = `${safeTitle}.${format === "markdown" ? "md" : format}`;
+      const ext = format === "markdown" ? "md" : format;
+      a.download = `${safeTitle}.${ext}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Export error:", e);
+      throw e; // Re-throw so PaperExportPanel can show the error
     }
   };
 
@@ -355,6 +367,21 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
             <span className="hidden sm:inline">Saved Papers ({allPapers.length})</span>
           </button>
 
+          {studioStage === "editor" && currentPaper && (
+            <button
+              onClick={() => setShowExportPanel((v) => !v)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 border text-[#e1e2eb] transition-colors cursor-pointer ${
+                showExportPanel
+                  ? "bg-[#ffb77d]/10 border-[#ffb77d] text-[#ffb77d]"
+                  : "bg-[#191c22] hover:bg-[#272a31] border-[#222735] hover:border-[#ffb77d]"
+              }`}
+              title="Open / close export panel"
+            >
+              <Download className="w-3.5 h-3.5 text-[#ffb77d]" />
+              <span className="hidden sm:inline">Export Paper</span>
+            </button>
+          )}
+
           <button
             onClick={handleNewPaper}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#ffb77d] text-[#e1e2eb] transition-colors cursor-pointer"
@@ -377,50 +404,67 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
       )}
 
       {/* Main View Area based on stage */}
-      <div className="flex-1 overflow-y-auto">
-        {studioStage === "config" && (
-          <PaperConfigView
-            onStartPlanning={handleStartPlanning}
-            isLoading={isLoading}
-          />
+      <div className="flex-1 overflow-y-auto flex flex-col">
+        {/* Export Panel overlay when in editor stage */}
+        {studioStage === "editor" && currentPaper && showExportPanel && (
+          <div className="flex-1">
+            <PaperExportPanel
+              paper={currentPaper}
+              sections={sections}
+              sources={sources}
+              onExport={handleExport}
+              onClose={() => setShowExportPanel(false)}
+            />
+          </div>
         )}
 
-        {studioStage === "plan" && currentPaper && (
-          <PaperPlanView
-            paper={currentPaper}
-            onApprovePlan={handleApprovePlan}
-            onRegeneratePlan={handleRegeneratePlan}
-            onBackToConfig={() => setStudioStage("config")}
-            isLoading={isLoading}
-          />
-        )}
+        {!showExportPanel && (
+          <>
+            {studioStage === "config" && (
+              <PaperConfigView
+                onStartPlanning={handleStartPlanning}
+                isLoading={isLoading}
+              />
+            )}
 
-        {studioStage === "sources" && currentPaper && (
-          <PaperSourceView
-            paper={currentPaper}
-            sources={sources}
-            onDraftPaper={handleDraftPaper}
-            onAddManualSource={handleAddManualSource}
-            onDiscoverMore={() => currentPaperId && paperApi.collectSources(currentPaperId)}
-            onBackToPlan={() => setStudioStage("plan")}
-            isLoading={isLoading}
-          />
-        )}
+            {studioStage === "plan" && currentPaper && (
+              <PaperPlanView
+                paper={currentPaper}
+                onApprovePlan={handleApprovePlan}
+                onRegeneratePlan={handleRegeneratePlan}
+                onBackToConfig={() => setStudioStage("config")}
+                isLoading={isLoading}
+              />
+            )}
 
-        {studioStage === "editor" && currentPaper && (
-          <PaperEditorView
-            paper={currentPaper}
-            sections={sections}
-            sources={sources}
-            onUpdateSection={handleUpdateSection}
-            onRegenerateSection={handleRegenerateSection}
-            onTransformSection={handleTransformSection}
-            onChangeCitationStyle={handleChangeCitationStyle}
-            onExport={handleExport}
-            onSaveRevision={handleSaveRevision}
-            onRestoreRevision={handleRestoreRevision}
-            onRefreshPaper={() => currentPaperId ? loadPaper(currentPaperId) : Promise.resolve()}
-          />
+            {studioStage === "sources" && currentPaper && (
+              <PaperSourceView
+                paper={currentPaper}
+                sources={sources}
+                onDraftPaper={handleDraftPaper}
+                onAddManualSource={handleAddManualSource}
+                onDiscoverMore={() => currentPaperId && paperApi.collectSources(currentPaperId)}
+                onBackToPlan={() => setStudioStage("plan")}
+                isLoading={isLoading}
+              />
+            )}
+
+            {studioStage === "editor" && currentPaper && (
+              <PaperEditorView
+                paper={currentPaper}
+                sections={sections}
+                sources={sources}
+                onUpdateSection={handleUpdateSection}
+                onRegenerateSection={handleRegenerateSection}
+                onTransformSection={handleTransformSection}
+                onChangeCitationStyle={handleChangeCitationStyle}
+                onExport={handleExport}
+                onSaveRevision={handleSaveRevision}
+                onRestoreRevision={handleRestoreRevision}
+                onRefreshPaper={() => currentPaperId ? loadPaper(currentPaperId) : Promise.resolve()}
+              />
+            )}
+          </>
         )}
       </div>
 
