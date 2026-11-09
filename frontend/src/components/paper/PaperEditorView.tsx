@@ -23,7 +23,8 @@ import {
   Plus,
   Trash2,
   HelpCircle,
-  Hash
+  Hash,
+  Wand2,
 } from "lucide-react";
 import {
   Paper,
@@ -196,33 +197,33 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
   const wordProgress = Math.min(100, Math.round((totalWords / targetWords) * 100));
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-[#101319] text-[#e1e2eb] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-[#090d16] text-[#f1f5f9] overflow-hidden">
       {/* Top Studio Control Bar */}
-      <div className="bg-[#191c22] border-b border-[#222735] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <div className="bg-[#0b0f19] border-b border-[#1e293b] px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
         {/* Left: Paper Title & Telemetry */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#4edea3]" />
-            <h1 className="font-serif text-base text-[#e1e2eb] font-normal truncate max-w-sm sm:max-w-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <h1 className="font-serif text-sm sm:text-base text-white font-medium truncate max-w-sm sm:max-w-md">
               {paper.title}
             </h1>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 font-mono text-xs text-[#a38c7c] border-l border-[#222735] pl-3">
-            <span className="text-[#ffb77d]">{paper.paper_type}</span>
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 border-l border-[#1e293b] pl-3">
+            <span className="text-amber-300 font-medium">{paper.paper_type}</span>
             <span>•</span>
-            <span className="text-[#b9c8de]">{paper.field}</span>
+            <span className="text-sky-300 font-medium">{paper.field}</span>
           </div>
         </div>
 
         {/* Center: Citation Style Quick Switcher */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-[#a38c7c] hidden sm:inline">Style:</span>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-slate-400 hidden sm:inline font-medium">Style:</span>
           <select
             value={paper.citation_style || "APA 7"}
             onChange={(e) => onChangeCitationStyle(e.target.value)}
-            className="bg-[#101319] border border-[#222735] hover:border-[#ffb77d] px-2.5 py-1 text-xs font-mono text-[#ffb77d] focus:outline-none cursor-pointer"
-            title="Instant citation style reformatting"
+            className="bg-[#141c2e] border border-[#1e293b] hover:border-sky-500/50 px-2.5 py-1 text-xs text-sky-300 rounded-md focus:outline-none cursor-pointer font-medium"
+            title="Change citation format"
           >
             <option value="APA 7">APA 7th</option>
             <option value="IEEE">IEEE [1]</option>
@@ -233,23 +234,23 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
           </select>
 
           {/* Save Status Badge */}
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-[#101319] border border-[#222735] text-[11px] font-mono">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#141c2e] border border-[#1e293b] text-xs rounded-md">
             {saveStatus === "saving" ? (
-              <span className="text-[#ffb77d] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ffb77d] animate-pulse" />
+              <span className="text-amber-400 flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span>Saving...</span>
               </span>
             ) : saveStatus === "saved" ? (
-              <span className="text-[#4edea3] flex items-center gap-1">
-                <Check className="w-3 h-3" />
-                <span>Saved {lastSavedAt}</span>
+              <span className="text-emerald-400 flex items-center gap-1 font-medium">
+                <Check className="w-3.5 h-3.5" />
+                <span>Saved</span>
               </span>
             ) : (
               <button
                 onClick={handleManualSave}
-                className="text-[#ffb4ab] hover:underline flex items-center gap-1"
+                className="text-rose-400 hover:underline flex items-center gap-1 font-medium"
               >
-                <Save className="w-3 h-3" />
+                <Save className="w-3.5 h-3.5" />
                 <span>Save</span>
               </button>
             )}
@@ -262,57 +263,57 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
           <button
             onClick={handleAuditOriginality}
             disabled={isAuditing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#ffb77d] text-xs font-mono text-[#ffb77d] transition-colors cursor-pointer disabled:opacity-50"
-            title="Passage-by-passage originality & attribution review"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-amber-500/40 text-xs font-medium text-amber-300 transition-all cursor-pointer disabled:opacity-50 rounded-lg"
+            title="Check for missing citations and originality"
           >
             <ShieldAlert className={`w-3.5 h-3.5 ${isAuditing ? "animate-spin" : ""}`} />
-            <span className="hidden md:inline">Originality Audit</span>
+            <span className="hidden md:inline">Originality Check</span>
           </button>
 
           {/* Revisions Button */}
           <button
             onClick={() => setActiveTab(activeTab === "history" ? "editor" : "history")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs font-medium transition-all cursor-pointer rounded-lg ${
               activeTab === "history"
-                ? "bg-[#ffb77d]/10 border-[#ffb77d] text-[#ffb77d]"
-                : "bg-[#101319] border-[#222735] text-[#b9c8de] hover:border-[#32353c]"
+                ? "bg-sky-500/20 border-sky-500/40 text-sky-300 font-semibold"
+                : "bg-[#141c2e] border-[#1e293b] text-slate-300 hover:text-white hover:border-slate-600"
             }`}
-            title="Draft version snapshots"
+            title="Saved versions"
           >
             <History className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Revisions ({revisions.length})</span>
+            <span className="hidden sm:inline">Versions ({revisions.length})</span>
           </button>
 
           {/* References & Evidence Toggle */}
           <button
             onClick={() => setActiveTab(activeTab === "references" ? "editor" : "references")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-xs font-medium transition-all cursor-pointer rounded-lg ${
               activeTab === "references"
-                ? "bg-[#4edea3]/10 border-[#4edea3] text-[#4edea3]"
-                : "bg-[#101319] border-[#222735] text-[#e1e2eb] hover:border-[#32353c]"
+                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-semibold"
+                : "bg-[#141c2e] border-[#1e293b] text-slate-300 hover:text-white hover:border-slate-600"
             }`}
-            title="Formatted bibliography"
+            title="View References"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Bibliography</span>
+            <span className="hidden sm:inline">References</span>
           </button>
 
           {/* Export Dropdown */}
           <div className="relative group">
             <button
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#ffb77d] hover:bg-[#ffdcc3] text-[#4d2600] font-mono text-xs uppercase font-bold tracking-wider transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-sm"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export</span>
             </button>
-            <div className="absolute right-0 top-full mt-1 w-44 bg-[#191c22] border border-[#222735] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40 p-1 font-mono text-xs">
+            <div className="absolute right-0 top-full mt-1.5 w-48 bg-[#0f1523] border border-[#1e293b] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40 p-1.5 text-xs">
               <button
                 onClick={async () => {
                   setIsExporting("docx");
                   await onExport("docx");
                   setIsExporting(null);
                 }}
-                className="w-full text-left px-3 py-2 text-[#e1e2eb] hover:bg-[#101319] hover:text-[#ffb77d] flex items-center justify-between"
+                className="w-full text-left px-3 py-2 text-slate-200 hover:bg-[#141c2e] hover:text-sky-300 flex items-center justify-between rounded-lg transition-colors cursor-pointer"
               >
                 <span>Word (.docx)</span>
                 {isExporting === "docx" && <span className="animate-spin text-xs">⟳</span>}
@@ -323,9 +324,9 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                   await onExport("pdf");
                   setIsExporting(null);
                 }}
-                className="w-full text-left px-3 py-2 text-[#e1e2eb] hover:bg-[#101319] hover:text-[#ffb77d] flex items-center justify-between"
+                className="w-full text-left px-3 py-2 text-slate-200 hover:bg-[#141c2e] hover:text-sky-300 flex items-center justify-between rounded-lg transition-colors cursor-pointer"
               >
-                <span>Academic PDF (.pdf)</span>
+                <span>PDF Document (.pdf)</span>
                 {isExporting === "pdf" && <span className="animate-spin text-xs">⟳</span>}
               </button>
               <button
@@ -334,7 +335,7 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                   await onExport("markdown");
                   setIsExporting(null);
                 }}
-                className="w-full text-left px-3 py-2 text-[#e1e2eb] hover:bg-[#101319] hover:text-[#ffb77d] flex items-center justify-between"
+                className="w-full text-left px-3 py-2 text-slate-200 hover:bg-[#141c2e] hover:text-sky-300 flex items-center justify-between rounded-lg transition-colors cursor-pointer"
               >
                 <span>Markdown (.md)</span>
                 {isExporting === "markdown" && <span className="animate-spin text-xs">⟳</span>}
@@ -347,31 +348,31 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
       {/* Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar: Section Navigator */}
-        <aside className="w-64 sm:w-72 bg-[#14171e] border-r border-[#222735] flex flex-col shrink-0 overflow-y-auto">
+        <aside className="w-64 sm:w-72 bg-[#0b0f19] border-r border-[#1e293b] flex flex-col shrink-0 overflow-y-auto">
           {/* Word count progress bar */}
-          <div className="p-4 border-b border-[#222735] bg-[#101319]">
-            <div className="flex items-center justify-between text-xs font-mono mb-1.5">
-              <span className="text-[#a38c7c]">TOTAL LENGTH</span>
-              <span className="text-[#e1e2eb] font-bold">
+          <div className="p-4 border-b border-[#1e293b] bg-[#0f1523]">
+            <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
+              <span className="text-slate-400">TOTAL LENGTH</span>
+              <span className="text-white font-mono">
                 {totalWords.toLocaleString()} / {targetWords.toLocaleString()} w
               </span>
             </div>
-            <div className="w-full bg-[#191c22] h-1.5 border border-[#222735] overflow-hidden">
+            <div className="w-full bg-[#141c2e] h-2 rounded-full overflow-hidden border border-[#1e293b]">
               <div
-                className="bg-[#4edea3] h-full transition-all duration-300"
+                className="bg-emerald-400 h-full rounded-full transition-all duration-300"
                 style={{ width: `${wordProgress}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-[#a38c7c] mt-1">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5">
               <span>{sections.length} sections</span>
-              <span>{wordProgress}% of target</span>
+              <span className="font-mono text-emerald-400">{wordProgress}% of target</span>
             </div>
           </div>
 
           {/* Section List Items */}
           <div className="p-2 space-y-1 flex-1">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-[#a38c7c] px-2 py-1">
-              Document Sections
+            <div className="text-[11px] uppercase tracking-wider text-slate-500 px-3 py-1.5 font-semibold">
+              Paper Sections
             </div>
             {sections.map((sec, idx) => {
               const isSelected = sec.id === activeSection?.id;
@@ -382,28 +383,28 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                     setActiveSectionId(sec.id);
                     setActiveTab("editor");
                   }}
-                  className={`w-full text-left p-2.5 transition-colors flex items-center justify-between border cursor-pointer ${
+                  className={`w-full text-left p-2.5 rounded-lg transition-all flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? "bg-[#1d2026] border-[#ffb77d] text-[#e1e2eb]"
-                      : "bg-[#101319] border-transparent hover:border-[#222735] text-[#dbc2b0]"
+                      ? "bg-sky-500/10 border border-sky-500/30 text-white font-medium"
+                      : "border border-transparent hover:bg-[#141c2e] text-slate-300 hover:text-white"
                   }`}
                 >
                   <div className="space-y-0.5 min-w-0 pr-2">
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#a38c7c]">
-                      <span>§ {idx + 1}</span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                      <span className="font-mono text-sky-400">§ {idx + 1}</span>
                       {sec.status === "edited" && (
-                        <span className="text-[#4edea3]">• edited</span>
+                        <span className="text-emerald-400">• edited</span>
                       )}
                       {sec.status === "pending_user" && (
-                        <span className="text-[#ffb4ab]">• user input</span>
+                        <span className="text-rose-400">• user input</span>
                       )}
                     </div>
-                    <div className="text-xs font-serif truncate font-normal">
+                    <div className="text-xs truncate font-medium">
                       {sec.title}
                     </div>
                   </div>
 
-                  <span className="font-mono text-[10px] text-[#a38c7c] shrink-0">
+                  <span className="font-mono text-[11px] text-slate-400 shrink-0">
                     {sec.word_count || 0}w
                   </span>
                 </button>
@@ -412,8 +413,8 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
           </div>
 
           {/* Discovered Sources Mini Registry */}
-          <div className="p-3 border-t border-[#222735] bg-[#101319]">
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#a38c7c] mb-2">
+          <div className="p-3.5 border-t border-[#1e293b] bg-[#0f1523]">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2 font-medium">
               <span>QUICK INSERT CITATION</span>
               <span>{sources.length} sources</span>
             </div>
@@ -422,11 +423,11 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                 <button
                   key={src.id || idx}
                   onClick={() => insertCitation(`[${idx + 1}]`)}
-                  className="w-full text-left p-1.5 bg-[#14171e] hover:bg-[#1d2026] border border-[#222735] text-[10px] font-mono truncate text-[#dbc2b0] hover:text-[#ffb77d] flex items-center justify-between"
-                  title={`Click to insert inline citation [${idx + 1}]`}
+                  className="w-full text-left p-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] rounded-md text-[11px] truncate text-slate-300 hover:text-sky-300 flex items-center justify-between transition-colors"
+                  title={`Click to insert citation [${idx + 1}]`}
                 >
                   <span className="truncate">{idx + 1}. {src.title}</span>
-                  <Plus className="w-3 h-3 text-[#ffb77d] shrink-0 ml-1" />
+                  <Plus className="w-3 h-3 text-sky-400 shrink-0 ml-1" />
                 </button>
               ))}
             </div>
@@ -435,48 +436,48 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
 
         {/* Center: Active Section Editor */}
         {activeTab === "editor" && (
-          <main className="flex-1 flex flex-col bg-[#101319] overflow-hidden">
+          <main className="flex-1 flex flex-col bg-[#090d16] overflow-hidden">
             {/* Section Action Toolbar */}
-            <div className="bg-[#191c22] border-b border-[#222735] px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="bg-[#0b0f19] border-b border-[#1e293b] px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#ffb77d]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-sky-400">
                   Editing Section:
                 </span>
-                <span className="font-serif text-base text-[#e1e2eb]">
+                <span className="font-serif text-base text-white font-medium">
                   {activeSection?.title || "Select a section"}
                 </span>
-                <span className="text-xs font-mono text-[#a38c7c]">
+                <span className="text-xs font-mono text-slate-400">
                   ({activeSectionContent.split(/\s+/).filter(Boolean).length} words)
                 </span>
               </div>
 
               {/* Section AI Transformation Cluster */}
-              <div className="flex items-center gap-1.5 font-mono text-xs">
+              <div className="flex items-center gap-1.5 text-xs">
                 <button
                   onClick={() => activeSection && onTransformSection(activeSection.section_key, "clarity")}
-                  className="px-2.5 py-1 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#b9c8de] text-[#b9c8de] transition-colors cursor-pointer"
-                  title="Rewrite for improved scholarly flow and academic precision"
+                  className="px-2.5 py-1 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-sky-500/40 text-slate-300 hover:text-white rounded-md transition-colors cursor-pointer font-medium"
+                  title="Rewrite to make writing clearer and more academic"
                 >
                   Improve Clarity
                 </button>
                 <button
                   onClick={() => activeSection && onTransformSection(activeSection.section_key, "expand")}
-                  className="px-2.5 py-1 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#4edea3] text-[#4edea3] transition-colors cursor-pointer"
-                  title="Expand with deeper theoretical context and literature synthesis"
+                  className="px-2.5 py-1 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-emerald-500/40 text-emerald-400 hover:text-emerald-300 rounded-md transition-colors cursor-pointer font-medium"
+                  title="Add more depth and detail from sources"
                 >
                   Expand
                 </button>
                 <button
                   onClick={() => activeSection && onTransformSection(activeSection.section_key, "shorten")}
-                  className="px-2.5 py-1 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#dbc2b0] text-[#dbc2b0] transition-colors cursor-pointer"
-                  title="Condense into concise academic prose"
+                  className="px-2.5 py-1 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-amber-500/40 text-amber-300 hover:text-amber-200 rounded-md transition-colors cursor-pointer font-medium"
+                  title="Make text more concise and direct"
                 >
                   Shorten
                 </button>
                 <button
                   onClick={() => activeSection && onRegenerateSection(activeSection.section_key)}
-                  className="px-2.5 py-1 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#ffb77d] text-[#ffb77d] transition-colors cursor-pointer"
-                  title="Regenerate this section only from evidence"
+                  className="px-2.5 py-1 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-sky-500/40 text-sky-400 hover:text-sky-300 rounded-md transition-colors cursor-pointer font-medium"
+                  title="Regenerate this section from sources"
                 >
                   Regenerate
                 </button>
@@ -485,9 +486,9 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
 
             {/* Editor Canvas */}
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 max-w-4xl w-full mx-auto">
-              <div className="bg-[#14171e] border border-[#222735] shadow-xl p-6 sm:p-10 min-h-[70vh] flex flex-col">
+              <div className="bg-[#0f1523] border border-[#1e293b] shadow-2xl p-6 sm:p-10 rounded-2xl min-h-[70vh] flex flex-col">
                 {/* Academic Section Heading */}
-                <h2 className="font-serif text-2xl text-[#e1e2eb] font-normal mb-6 pb-3 border-b border-[#222735]">
+                <h2 className="font-serif text-2xl text-white font-normal mb-6 pb-3 border-b border-[#1e293b]">
                   {activeSection?.title}
                 </h2>
 
@@ -496,7 +497,7 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                   value={activeSectionContent}
                   onChange={(e) => handleContentChange(e.target.value)}
                   placeholder="Draft content for this section..."
-                  className="flex-1 w-full bg-transparent text-[#e1e2eb] text-sm leading-relaxed font-sans placeholder-[#a38c7c]/50 focus:outline-none resize-none min-h-[500px]"
+                  className="flex-1 w-full bg-transparent text-slate-100 text-sm leading-relaxed font-sans placeholder-slate-500 focus:outline-none resize-none min-h-[500px]"
                 />
               </div>
             </div>
@@ -505,13 +506,13 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
 
         {/* Tab: Formatted Bibliography */}
         {activeTab === "references" && (
-          <main className="flex-1 flex flex-col bg-[#101319] overflow-hidden">
-            <div className="bg-[#191c22] border-b border-[#222735] px-6 py-3 flex items-center justify-between shrink-0">
+          <main className="flex-1 flex flex-col bg-[#090d16] overflow-hidden">
+            <div className="bg-[#0b0f19] border-b border-[#1e293b] px-6 py-3 flex items-center justify-between shrink-0">
               <div>
-                <span className="font-mono text-xs uppercase tracking-wider text-[#4edea3]">
-                  Bibliography & Reference List
+                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  References &amp; Citations
                 </span>
-                <h2 className="font-serif text-lg text-[#e1e2eb] font-normal">
+                <h2 className="font-serif text-lg text-white font-medium">
                   Formatted in {paper.citation_style || "APA 7"} Style
                 </h2>
               </div>
@@ -521,23 +522,23 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
                   setCopiedRef(true);
                   setTimeout(() => setCopiedRef(false), 2000);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] text-xs font-mono text-[#e1e2eb]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] text-xs font-medium text-slate-200 rounded-lg transition-colors cursor-pointer"
               >
-                {copiedRef ? <Check className="w-3.5 h-3.5 text-[#4edea3]" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedRef ? "Copied" : "Copy All References"}</span>
+                {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedRef ? "Copied" : "Copy References"}</span>
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-8 max-w-4xl w-full mx-auto">
-              <div className="bg-[#14171e] border border-[#222735] p-8 space-y-4 font-serif text-sm text-[#dbc2b0] leading-relaxed">
+              <div className="bg-[#0f1523] border border-[#1e293b] p-8 rounded-2xl shadow-lg space-y-4 font-serif text-sm text-slate-200 leading-relaxed">
                 {formattedReferences ? (
                   formattedReferences.split("\n\n").map((entry, idx) => (
-                    <div key={idx} className="pl-6 -indent-6 border-b border-[#222735]/40 pb-3">
+                    <div key={idx} className="pl-6 -indent-6 border-b border-[#1e293b]/50 pb-3">
                       {entry}
                     </div>
                   ))
                 ) : (
-                  <p className="text-[#a38c7c] italic font-sans">No references generated yet.</p>
+                  <p className="text-slate-500 italic font-sans">No references generated yet.</p>
                 )}
               </div>
             </div>
@@ -546,71 +547,71 @@ export const PaperEditorView: React.FC<PaperEditorViewProps> = ({
 
         {/* Tab: Draft Version History & Revisions */}
         {activeTab === "history" && (
-          <main className="flex-1 flex flex-col bg-[#101319] overflow-hidden">
-            <div className="bg-[#191c22] border-b border-[#222735] px-6 py-3 flex items-center justify-between shrink-0">
+          <main className="flex-1 flex flex-col bg-[#090d16] overflow-hidden">
+            <div className="bg-[#0b0f19] border-b border-[#1e293b] px-6 py-3 flex items-center justify-between shrink-0">
               <div>
-                <span className="font-mono text-xs uppercase tracking-wider text-[#ffb77d]">
-                  Draft Version History
+                <span className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+                  Version Archive
                 </span>
-                <h2 className="font-serif text-lg text-[#e1e2eb] font-normal">
-                  Save Snapshots & Restore Prior Edits
+                <h2 className="font-serif text-lg text-white font-medium">
+                  Save draft checkpoints and restore previous versions
                 </h2>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 max-w-3xl w-full mx-auto space-y-6">
               {/* Snapshot Creator */}
-              <div className="bg-[#191c22] border border-[#222735] p-4 space-y-3">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#e1e2eb]">
-                  Create Manual Draft Snapshot
+              <div className="bg-[#0f1523] border border-[#1e293b] p-5 rounded-2xl space-y-3 shadow-sm">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-white">
+                  Save Version Checkpoint
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={revisionLabelInput}
                     onChange={(e) => setRevisionLabelInput(e.target.value)}
-                    placeholder="e.g., Pre-defense draft with expanded methodology"
-                    className="flex-1 bg-[#101319] border border-[#222735] focus:border-[#ffb77d] px-3 py-2 text-xs text-[#e1e2eb] focus:outline-none"
+                    placeholder="e.g., Draft with refined methodology and literature review"
+                    className="flex-1 bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 px-3.5 py-2 text-xs text-white focus:outline-none rounded-xl"
                   />
                   <button
                     onClick={handleCreateSnapshot}
                     disabled={isCreatingRevision}
-                    className="px-4 py-2 bg-[#ffb77d] text-[#4d2600] font-mono text-xs uppercase font-bold tracking-wider cursor-pointer disabled:opacity-50"
+                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold tracking-wide cursor-pointer disabled:opacity-50 rounded-xl transition-all shadow-sm"
                   >
-                    {isCreatingRevision ? "Saving..." : "Take Snapshot"}
+                    {isCreatingRevision ? "Saving..." : "Save Version"}
                   </button>
                 </div>
               </div>
 
               {/* Saved Snapshots List */}
-              <div className="space-y-2">
-                <div className="text-xs font-mono uppercase text-[#a38c7c]">
-                  Saved Snapshots ({revisions.length})
+              <div className="space-y-2.5">
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Saved Versions ({revisions.length})
                 </div>
                 {revisions.length === 0 ? (
-                  <div className="p-8 text-center bg-[#191c22] border border-[#222735] text-xs font-mono text-[#a38c7c]">
-                    No snapshots taken yet. Click 'Take Snapshot' to create an immutable rollback point.
+                  <div className="p-8 text-center bg-[#0f1523] border border-[#1e293b] text-xs text-slate-400 rounded-2xl">
+                    No saved checkpoints yet. Click 'Save Version' to checkpoint your current draft.
                   </div>
                 ) : (
                   revisions.map((rev) => (
                     <div
                       key={rev.id}
-                      className="bg-[#191c22] border border-[#222735] p-3.5 flex items-center justify-between gap-4"
+                      className="bg-[#0f1523] border border-[#1e293b] p-4 rounded-xl flex items-center justify-between gap-4 shadow-sm"
                     >
                       <div className="space-y-0.5">
-                        <div className="text-xs text-[#e1e2eb] font-medium font-sans">
+                        <div className="text-xs text-white font-medium">
                           {rev.revision_label}
                         </div>
-                        <div className="text-[11px] font-mono text-[#a38c7c]">
+                        <div className="text-[11px] font-mono text-slate-400">
                           {new Date(rev.created_at).toLocaleString()}
                         </div>
                       </div>
 
                       <button
                         onClick={() => handleRestore(rev.id)}
-                        className="px-3 py-1.5 bg-[#101319] hover:bg-[#272a31] border border-[#222735] hover:border-[#ffb77d] text-xs font-mono text-[#ffb77d] transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-sky-500/40 text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors cursor-pointer rounded-lg"
                       >
-                        Restore Draft
+                        Restore Version
                       </button>
                     </div>
                   ))

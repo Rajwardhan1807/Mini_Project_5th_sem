@@ -17,7 +17,6 @@ import {
   FileDown,
   Loader2,
   CheckCircle2,
-  Layers,
   BookOpen,
 } from "lucide-react";
 import { Report, Source, Claim, api } from "@/lib/api";
@@ -75,7 +74,6 @@ export const ReportView: React.FC<ReportViewProps> = ({
 
   const handleDownloadPdf = async () => {
     if (!researchId) {
-      // Fallback: print/pdf window
       window.print();
       return;
     }
@@ -103,11 +101,9 @@ export const ReportView: React.FC<ReportViewProps> = ({
     }
   };
 
-  // Parse markdown into sections if available
   const rawMarkdown = report.full_markdown || "";
   const parsedHtml = marked.parse(rawMarkdown) as string;
 
-  // Extract sections
   const verifiedClaims = claims.filter((c) => c.status === "VERIFIED" || c.status === "PARTIALLY VERIFIED");
   const conflictingClaims = claims.filter(
     (c) => c.status === "CONTRADICTED" || (c.contradicting_sources && c.contradicting_sources.length > 0)
@@ -116,15 +112,15 @@ export const ReportView: React.FC<ReportViewProps> = ({
   return (
     <div className="w-full flex flex-col space-y-6">
       {/* ── Top Header & Action Toolbar ───────────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0b0e14] p-5 sm:p-6 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section className="border border-[#1e293b] bg-[#0f1523] p-5 sm:p-6 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[11px] text-[#a38c7c] uppercase">
-            <span className="text-[#ffb77d] border border-[#d97706]/60 px-2 py-0.5 bg-[#d97706]/10 font-semibold rounded-sm">
-              RESEARCH REPORT
+          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+            <span className="text-sky-300 border border-sky-500/30 px-2 py-0.5 bg-sky-500/10 font-semibold rounded-md">
+              SYNTHESIZED REPORT
             </span>
-            <span>VERIFIED &bull; {new Date(report.created_at).toLocaleDateString()}</span>
+            <span>Verified • {new Date(report.created_at).toLocaleDateString()}</span>
           </div>
-          <h2 className="font-serif text-xl sm:text-2xl text-[#f1f5f9] tracking-tight mt-1.5 font-normal">
+          <h2 className="font-serif text-xl sm:text-2xl text-white tracking-tight mt-1.5 font-normal">
             {report.title.replace("Research Report: ", "")}
           </h2>
         </div>
@@ -133,18 +129,18 @@ export const ReportView: React.FC<ReportViewProps> = ({
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#101319] hover:bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#dbc2b0] hover:text-[#f1f5f9] font-mono text-xs transition-colors cursor-pointer rounded-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-slate-300 hover:text-white text-xs font-medium transition-all cursor-pointer rounded-lg"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-[#4edea3]" /> : <Copy className="w-3.5 h-3.5 text-[#a38c7c]" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
             <span>{copied ? "Copied" : "Copy Markdown"}</span>
           </button>
 
           <button
             onClick={handleDownloadMarkdown}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#101319] hover:bg-[#191c22] border border-[#222735] hover:border-[#a38c7c] text-[#dbc2b0] hover:text-[#f1f5f9] font-mono text-xs transition-colors cursor-pointer rounded-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-slate-300 hover:text-white text-xs font-medium transition-all cursor-pointer rounded-lg"
             title="Download source markdown file"
           >
-            <FileDown className="w-3.5 h-3.5 text-[#b9c8de]" />
+            <FileDown className="w-3.5 h-3.5 text-slate-400" />
             <span>Markdown (.md)</span>
           </button>
 
@@ -152,7 +148,7 @@ export const ReportView: React.FC<ReportViewProps> = ({
           <button
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
-            className="flex items-center gap-2 px-4 py-2 bg-[#d97706] hover:bg-[#ffb77d] text-[#08090b] font-bold font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 rounded-sm shadow-md"
+            className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs rounded-lg transition-all cursor-pointer disabled:opacity-50 shadow-md hover:shadow-sky-500/20"
             title="Download professionally formatted PDF research report"
           >
             {isDownloadingPdf ? (
@@ -176,32 +172,32 @@ export const ReportView: React.FC<ReportViewProps> = ({
       </section>
 
       {downloadError && (
-        <div className="p-3 bg-[#93000a]/20 border border-[#dc2626] text-[#ffb4ab] text-xs font-mono rounded-sm flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-lg flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
           <span>{downloadError}</span>
         </div>
       )}
 
       {/* ── Section 1: Research Summary ───────────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+      <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
         <button
           onClick={() => toggleSection("summary")}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
         >
           <div className="flex items-center gap-2.5">
-            <FileText className="w-4 h-4 text-[#ffb77d]" />
-            <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">1. Research Summary</h3>
+            <FileText className="w-4 h-4 text-sky-400" />
+            <h3 className="font-serif text-lg text-white font-medium">1. Executive Summary</h3>
           </div>
           {expandedSections.summary ? (
-            <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
         {expandedSections.summary && (
-          <div className="p-5 sm:p-6 bg-[#0b0e14] text-sm text-[#dbc2b0] leading-relaxed">
-            <p className="font-sans text-base leading-relaxed text-[#e1e2eb]">
+          <div className="p-5 sm:p-6 bg-[#0b0f19] text-sm text-slate-300 leading-relaxed">
+            <p className="font-sans text-base leading-relaxed text-slate-200">
               {report.executive_summary || "No summary provided."}
             </p>
           </div>
@@ -210,61 +206,64 @@ export const ReportView: React.FC<ReportViewProps> = ({
 
       {/* ── Section 2: Key Findings ───────────────────────────────────────────── */}
       {report.key_findings && report.key_findings.length > 0 && (
-        <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+        <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
           <button
             onClick={() => toggleSection("findings")}
-            className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+            className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
           >
             <div className="flex items-center gap-2.5">
-              <Award className="w-4 h-4 text-[#4edea3]" />
+              <Award className="w-4 h-4 text-emerald-400" />
               <div className="flex items-center gap-2">
-                <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">2. Key Findings</h3>
-                <span className="text-xs font-mono text-[#a38c7c]">
+                <h3 className="font-serif text-lg text-white font-medium">2. Core Synthesized Findings</h3>
+                <span className="text-xs text-slate-400 font-medium">
                   ({report.key_findings.length} findings)
                 </span>
               </div>
             </div>
             {expandedSections.findings ? (
-              <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+              <ChevronUp className="w-4 h-4 text-slate-400" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+              <ChevronDown className="w-4 h-4 text-slate-400" />
             )}
           </button>
 
           {expandedSections.findings && (
-            <div className="p-5 sm:p-6 bg-[#0b0e14] space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-5 sm:p-6 bg-[#0b0f19] space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {report.key_findings.map((finding, idx) => (
                   <article
                     key={idx}
-                    className="border border-[#222735] bg-[#101319] p-4 flex flex-col justify-between rounded-sm"
+                    className="border border-[#1e293b] bg-[#141c2e] p-4.5 rounded-xl flex flex-col justify-between space-y-3"
                   >
                     <div>
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#222735] font-mono">
-                        <span className="text-xs text-[#a38c7c]">FINDING #{String(idx + 1).padStart(2, "0")}</span>
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1e293b] text-xs">
+                        <span className="font-mono text-slate-400 font-medium">FINDING #{String(idx + 1).padStart(2, "0")}</span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 border rounded-sm uppercase ${
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                             finding.confidence >= 70
-                              ? "bg-[#10b981]/10 text-[#4edea3] border-[#10b981]/40"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                               : finding.confidence >= 50
-                              ? "bg-[#d97706]/10 text-[#ffb77d] border-[#d97706]/40"
-                              : "bg-[#93000a]/20 text-[#ffb4ab] border-[#dc2626]/40"
+                              ? "bg-sky-500/10 text-sky-400 border-sky-500/30"
+                              : "bg-rose-500/10 text-rose-400 border-rose-500/30"
                           }`}
                         >
                           {finding.confidence}% Confidence
                         </span>
                       </div>
-                      <h4 className="font-serif text-base text-[#f1f5f9] mb-1.5 font-medium leading-snug">
+                      <h4 className="font-serif text-base text-white mb-1.5 font-medium leading-snug">
                         {finding.finding}
                       </h4>
-                      <p className="text-xs text-[#dbc2b0] leading-relaxed">
+                      <p className="text-xs text-slate-300 leading-relaxed">
                         {finding.summary}
                       </p>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-[#222735] flex items-center justify-between font-mono text-[11px] text-[#a38c7c]">
+                    <div className="pt-2 border-t border-[#1e293b] flex items-center justify-between text-xs text-slate-400">
                       <span>{finding.evidence_sources_count} supporting sources</span>
-                      <span className="text-[#4edea3]">&bull; Verified</span>
+                      <span className="text-emerald-400 font-medium flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        <span>Verified</span>
+                      </span>
                     </div>
                   </article>
                 ))}
@@ -275,40 +274,43 @@ export const ReportView: React.FC<ReportViewProps> = ({
       )}
 
       {/* ── Section 3: Verified Information ───────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+      <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
         <button
           onClick={() => toggleSection("verified")}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
         >
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-[#4edea3]" />
-            <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">
-              3. Verified Information &amp; Analysis
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <h3 className="font-serif text-lg text-white font-medium">
+              3. Verified Claims &amp; Evidentiary Analysis
             </h3>
           </div>
           {expandedSections.verified ? (
-            <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
         {expandedSections.verified && (
-          <div className="p-5 sm:p-6 bg-[#0b0e14] space-y-4">
+          <div className="p-5 sm:p-6 bg-[#0b0f19] space-y-4">
             {verifiedClaims.length > 0 ? (
               <div className="space-y-3">
                 {verifiedClaims.map((vc, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 bg-[#101319] border border-[#222735] rounded-sm space-y-1"
+                    className="p-4 bg-[#141c2e] border border-[#1e293b] rounded-xl space-y-1.5"
                   >
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#4edea3] font-bold">&bull; Verified Point</span>
-                      <span className="text-[#a38c7c]">{vc.confidence}% confidence</span>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        <span>Verified Claim</span>
+                      </span>
+                      <span className="font-mono text-slate-400">{vc.confidence}% confidence</span>
                     </div>
-                    <p className="text-sm text-[#f1f5f9] font-medium">{vc.claim}</p>
+                    <p className="text-sm text-white font-medium">{vc.claim}</p>
                     {vc.analysis && (
-                      <p className="text-xs text-[#a38c7c] leading-relaxed pt-1">
+                      <p className="text-xs text-slate-400 leading-relaxed pt-1">
                         {vc.analysis}
                       </p>
                     )}
@@ -316,7 +318,7 @@ export const ReportView: React.FC<ReportViewProps> = ({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#a38c7c] italic">
+              <p className="text-xs text-slate-400 italic">
                 {report.evidence_and_analysis || "Detailed evidence synthesized from consulted sources."}
               </p>
             )}
@@ -325,52 +327,52 @@ export const ReportView: React.FC<ReportViewProps> = ({
       </section>
 
       {/* ── Section 4: Conflicting Information ────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+      <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
         <button
           onClick={() => toggleSection("conflicts")}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
         >
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-[#ffb77d]" />
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">
-                4. Conflicting Information &amp; Debate
+              <h3 className="font-serif text-lg text-white font-medium">
+                4. Conflicting Assertions &amp; Academic Debate
               </h3>
-              <span className="text-xs font-mono text-[#a38c7c]">
-                ({conflictingClaims.length} debated points)
+              <span className="text-xs text-slate-400 font-medium">
+                ({conflictingClaims.length} points)
               </span>
             </div>
           </div>
           {expandedSections.conflicts ? (
-            <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
         {expandedSections.conflicts && (
-          <div className="p-5 sm:p-6 bg-[#0b0e14] space-y-3">
+          <div className="p-5 sm:p-6 bg-[#0b0f19] space-y-3">
             {conflictingClaims.length > 0 ? (
               conflictingClaims.map((cc, idx) => (
                 <div
                   key={idx}
-                  className="p-4 bg-[#101319] border border-[#222735] border-l-2 border-l-[#d97706] rounded-sm space-y-2"
+                  className="p-4 bg-[#141c2e] border border-[#1e293b] border-l-4 border-l-amber-500 rounded-xl space-y-2"
                 >
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-[#ffb77d] font-bold">Conflicting Perspectives</span>
-                    <span className="text-[#a38c7c]">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-amber-400 font-semibold">Opposing Perspectives</span>
+                    <span className="text-slate-400 font-mono text-[11px]">
                       {cc.supporting_sources?.length || 0} supporting vs{" "}
                       {cc.contradicting_sources?.length || 0} counter
                     </span>
                   </div>
-                  <h4 className="text-sm text-[#f1f5f9] font-medium">{cc.claim}</h4>
-                  <p className="text-xs text-[#dbc2b0] leading-relaxed">
+                  <h4 className="text-sm text-white font-medium">{cc.claim}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">
                     {cc.analysis || "Sources hold differing positions on this assertion."}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#a38c7c] italic">
+              <p className="text-xs text-slate-400 italic">
                 {report.conflicting_evidence || "No critical contradictions detected among consulted sources."}
               </p>
             )}
@@ -379,46 +381,46 @@ export const ReportView: React.FC<ReportViewProps> = ({
       </section>
 
       {/* ── Section 5: Sources & Evidence ─────────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+      <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
         <button
           onClick={() => toggleSection("sources")}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
         >
           <div className="flex items-center gap-2.5">
-            <BookOpen className="w-4 h-4 text-[#b9c8de]" />
+            <BookOpen className="w-4 h-4 text-slate-400" />
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">5. Sources &amp; Citations</h3>
-              <span className="text-xs font-mono text-[#a38c7c]">
+              <h3 className="font-serif text-lg text-white font-medium">5. Sources &amp; Citations</h3>
+              <span className="text-xs text-slate-400 font-medium">
                 ({sources.length > 0 ? sources.length : "Full list"})
               </span>
             </div>
           </div>
           {expandedSections.sources ? (
-            <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
         {expandedSections.sources && (
-          <div className="p-5 sm:p-6 bg-[#0b0e14] space-y-3">
+          <div className="p-5 sm:p-6 bg-[#0b0f19] space-y-3">
             {sources.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {sources.map((src, idx) => (
                   <div
                     key={src.id || idx}
-                    className="p-3 bg-[#101319] border border-[#222735] rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                    className="p-3.5 bg-[#141c2e] border border-[#1e293b] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-700 transition-colors"
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-[#a38c7c]">
-                        <span>[{idx + 1}]</span>
-                        <span className="text-[#b9c8de]">{src.domain}</span>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium">
+                        <span className="font-mono text-sky-400">[{idx + 1}]</span>
+                        <span className="text-slate-300">{src.domain}</span>
                         <span>&bull;</span>
                         <span>{src.source_type}</span>
                         <span>&bull;</span>
-                        <span className="text-[#4edea3]">{Math.round(src.reliability * 100)}% quality</span>
+                        <span className="text-emerald-400 font-mono">{Math.round(src.reliability * 100)}% quality</span>
                       </div>
-                      <h4 className="text-xs sm:text-sm text-[#f1f5f9] font-medium truncate mt-0.5">
+                      <h4 className="text-xs sm:text-sm text-white font-medium truncate mt-0.5">
                         {src.title}
                       </h4>
                     </div>
@@ -428,7 +430,7 @@ export const ReportView: React.FC<ReportViewProps> = ({
                         href={src.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-mono text-[#ffb77d] hover:text-[#ffdcc3] transition-colors shrink-0"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0f1523] hover:bg-[#1a243a] border border-[#1e293b] text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors shrink-0"
                       >
                         <span>Visit</span>
                         <ExternalLink className="w-3 h-3" />
@@ -438,7 +440,7 @@ export const ReportView: React.FC<ReportViewProps> = ({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#a38c7c] italic">
+              <p className="text-xs text-slate-400 italic">
                 Refer to report document for full bibliography.
               </p>
             )}
@@ -447,44 +449,44 @@ export const ReportView: React.FC<ReportViewProps> = ({
       </section>
 
       {/* ── Section 6: Limitations ────────────────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0e1117] rounded-sm overflow-hidden">
+      <section className="border border-[#1e293b] bg-[#0f1523] rounded-xl overflow-hidden shadow-sm">
         <button
           onClick={() => toggleSection("limitations")}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#131720] transition-colors cursor-pointer text-left border-b border-[#222735]"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#141c2e] transition-colors cursor-pointer text-left border-b border-[#1e293b]"
         >
           <div className="flex items-center gap-2.5">
-            <HelpCircle className="w-4 h-4 text-[#a38c7c]" />
-            <h3 className="font-serif text-lg text-[#f1f5f9] font-medium">6. Research Limitations</h3>
+            <HelpCircle className="w-4 h-4 text-slate-400" />
+            <h3 className="font-serif text-lg text-white font-medium">6. Research Scope &amp; Limitations</h3>
           </div>
           {expandedSections.limitations ? (
-            <ChevronUp className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#a38c7c]" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
         {expandedSections.limitations && (
-          <div className="p-5 sm:p-6 bg-[#0b0e14] text-xs sm:text-sm text-[#dbc2b0] leading-relaxed">
+          <div className="p-5 sm:p-6 bg-[#0b0f19] text-xs sm:text-sm text-slate-300 leading-relaxed">
             <p className="font-sans leading-relaxed">
               {report.limitations ||
-                "This research reflects public domain web indexing, official gazettes, and academic documents available at execution time. Proprietary or confidential agreements remain outside public verification."}
+                "This research reflects open public domain web indexing, official gazettes, and academic documents available at execution time. Proprietary or confidential agreements remain outside public verification."}
             </p>
           </div>
         )}
       </section>
 
       {/* ── Full Document Reading View ────────────────────────────────────────── */}
-      <article className="border border-[#222735] bg-[#0b0e14] p-6 sm:p-10 rounded-sm">
-        <div className="border-b border-[#222735] pb-3 mb-6 flex items-center justify-between">
-          <span className="font-mono text-xs uppercase tracking-wider text-[#a38c7c]">
-            Complete Written Report
+      <article className="border border-[#1e293b] bg-[#0f1523] p-6 sm:p-10 rounded-2xl shadow-lg">
+        <div className="border-b border-[#1e293b] pb-4 mb-6 flex items-center justify-between">
+          <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
+            Complete Synthesized Report
           </span>
           <button
             onClick={handleDownloadPdf}
-            className="text-xs font-mono text-[#ffb77d] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download as PDF</span>
+            <span>Download PDF</span>
           </button>
         </div>
 

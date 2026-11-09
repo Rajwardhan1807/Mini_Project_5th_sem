@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileUp, History, Plus, Menu, Shield, GraduationCap, Sparkles } from "lucide-react";
+import { FileUp, History, Plus, Menu, GraduationCap, Shield } from "lucide-react";
 
 interface HeaderProps {
   onOpenHistory: () => void;
@@ -28,24 +28,23 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   backendHealth,
 }) => {
-  const modelName = backendHealth?.ollama?.model || "qwen3.5:latest";
   const modeDisplay = mode
     ? mode === "deep"
-      ? "Deep Research"
+      ? "Deep Investigation"
       : mode === "quick"
-      ? "Quick Research"
-      : "Document Research"
+      ? "Quick Briefing"
+      : "Document Analysis"
     : "Research Mode";
 
   return (
-    <header className="fixed top-0 left-0 w-full z-30 md:pl-72 bg-[#101319] border-b border-[#222735]">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 h-12">
+    <header className="fixed top-0 left-0 w-full z-30 md:pl-72 bg-[#0b0f19]/90 backdrop-blur-md border-b border-[#1e293b]">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 h-13">
         {/* Left: Mobile Toggle & Status */}
-        <div className="flex items-center gap-3 text-xs font-mono">
+        <div className="flex items-center gap-3 text-xs">
           {/* Mobile hamburger button */}
           <button
             onClick={onToggleMobileMenu}
-            className="md:hidden p-1 text-[#dbc2b0] hover:text-[#e1e2eb] border border-[#222735] bg-[#0b0e14] rounded-sm cursor-pointer"
+            className="md:hidden p-1.5 text-slate-300 hover:text-white border border-[#1e293b] bg-[#141c2e] rounded-md cursor-pointer transition-colors"
             aria-label="Open menu"
           >
             <Menu className="w-4 h-4" />
@@ -53,68 +52,69 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Active Session Status */}
           {activeSessionId ? (
-            <span className="text-[#4edea3] tracking-wider uppercase flex items-center gap-1.5 shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse" />
-              <span>Session: Active</span>
-            </span>
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-medium shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Active Session</span>
+            </div>
           ) : (
-            <span className="text-[#a38c7c] tracking-wider uppercase flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ffb77d]" />
-              <span>Ready</span>
-            </span>
+            <div className="flex items-center gap-2 text-slate-400 shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-medium text-slate-300">Ready</span>
+            </div>
           )}
 
           {/* Mode label */}
           {activeSessionId && (
-            <span className="text-[#dbc2b0] border-l border-[#222735] pl-3 hidden sm:inline shrink-0">
+            <span className="text-slate-400 border-l border-[#1e293b] pl-3 hidden sm:inline shrink-0 font-medium">
               {modeDisplay}
             </span>
           )}
 
-          {/* Privacy & Zero Cost */}
-          <span className="text-[#a38c7c] border-l border-[#222735] pl-3 hidden lg:inline shrink-0">
-            Local AI &bull; ₹0 Cost
+          {/* Privacy & Local AI label */}
+          <span className="text-slate-400 border-l border-[#1e293b] pl-3 hidden lg:flex items-center gap-1.5 shrink-0 text-[11px]">
+            <Shield className="w-3 h-3 text-sky-400" />
+            <span>Private &amp; Local Inference</span>
           </span>
         </div>
 
         {/* Right: Quick Action Buttons */}
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 text-xs">
           {onNewResearch && (
             <button
               onClick={onNewResearch}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#ffb77d] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-sky-500/40 text-slate-200 hover:text-white transition-all cursor-pointer rounded-md font-medium"
               title="Start a new research query"
             >
-              <Plus className="w-3.5 h-3.5 text-[#ffb77d]" />
+              <Plus className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">New Research</span>
             </button>
           )}
 
           <button
             onClick={onOpenDocuments}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-slate-300 hover:text-white transition-all cursor-pointer rounded-md font-medium"
             title="Upload a document for research"
           >
-            <FileUp className="w-3.5 h-3.5 text-[#ffb77d]" />
+            <FileUp className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden md:inline">Documents</span>
           </button>
 
           <button
             onClick={onOpenHistory}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#a38c7c] text-[#e1e2eb] transition-colors cursor-pointer rounded-sm"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-slate-300 hover:text-white transition-all cursor-pointer rounded-md font-medium"
             title="View past research sessions"
           >
-            <History className="w-3.5 h-3.5 text-[#b9c8de]" />
+            <History className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden md:inline">History</span>
           </button>
 
           {onOpenPaperStudio && (
             <button
               onClick={onOpenPaperStudio}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] border border-[#ffb77d]/40 hover:border-[#ffb77d] text-[#ffb77d] transition-colors cursor-pointer rounded-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 transition-all cursor-pointer rounded-md font-medium"
               title="Open Research Paper Studio"
             >
-              <GraduationCap className="w-3.5 h-3.5 text-[#ffb77d]" />
+              <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">Paper Studio</span>
             </button>
           )}

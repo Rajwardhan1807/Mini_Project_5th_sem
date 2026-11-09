@@ -12,8 +12,7 @@ import {
   Scale,
   Hash,
   ArrowRight,
-  HelpCircle,
-  Lightbulb
+  ShieldCheck,
 } from "lucide-react";
 import { Paper } from "@/lib/api";
 
@@ -21,30 +20,6 @@ interface PaperConfigViewProps {
   onStartPlanning: (config: Partial<Paper>) => void;
   isLoading: boolean;
 }
-
-const PRESET_TOPICS = [
-  {
-    title: "Post-Quantum Cryptography in Resource-Constrained Edge IoT Devices",
-    field: "Computer Science & AI",
-    paper_type: "Survey Paper",
-    citation_style: "IEEE",
-    rq: "What are the computational trade-offs of lattice-based post-quantum key encapsulation algorithms on embedded ARM Cortex-M microcontrollers?",
-  },
-  {
-    title: "Hallucination Mitigation in Local Multi-Agent Retrieval-Augmented Generation",
-    field: "Computer Science & AI",
-    paper_type: "Systematic Literature Review",
-    citation_style: "APA 7",
-    rq: "To what extent do multi-agent cross-verification loops reduce factual hallucinations compared to single-agent RAG in proprietary corpora?",
-  },
-  {
-    title: "Autonomous AI Agents in Macroeconomic Market Microstructure",
-    field: "Economics & Business",
-    paper_type: "Empirical / Experimental Study",
-    citation_style: "Chicago",
-    rq: "How does the proliferation of algorithmic LLM execution agents alter intraday volatility and liquidity depth across decentralized exchanges?",
-  },
-];
 
 export const PaperConfigView: React.FC<PaperConfigViewProps> = ({
   onStartPlanning,
@@ -80,302 +55,256 @@ export const PaperConfigView: React.FC<PaperConfigViewProps> = ({
     });
   };
 
-  const applyPreset = (preset: typeof PRESET_TOPICS[0]) => {
-    setTitle(preset.title);
-    setField(preset.field);
-    setPaperType(preset.paper_type);
-    setCitationStyle(preset.citation_style);
-    setResearchQuestion(preset.rq);
-    setObjectives(`Analyze recent peer-reviewed publications (2020-2025), compare performance empirical benchmarks, and identify unresolved challenges.`);
-  };
-
   return (
-    <div className="max-w-4xl mx-auto py-4 px-4 sm:px-6">
+    <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
       {/* Header Banner */}
-      <div className="bg-[#191c22] border border-[#222735] p-6 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ffb77d]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex items-center gap-3 mb-2 font-mono text-xs uppercase tracking-widest text-[#ffb77d]">
-          <GraduationCap className="w-4 h-4 text-[#ffb77d]" />
-          <span>ResearchForge Academic Engine</span>
-          <span className="text-[#a38c7c]">•</span>
-          <span className="text-[#4edea3]">Zero-Cost Local Pipeline</span>
+      <div className="bg-[#0f1523] border border-[#1e293b] p-6 sm:p-7 mb-6 rounded-2xl relative overflow-hidden shadow-lg">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-amber-400 uppercase tracking-wider">
+          <GraduationCap className="w-4 h-4" />
+          <span>Academic Paper Studio</span>
+          <span className="text-slate-600">•</span>
+          <span className="text-emerald-400">Private On-Device Generation</span>
         </div>
-        <h1 className="font-serif text-2xl sm:text-3xl text-[#e1e2eb] font-normal tracking-tight">
-          Configure AI Research Paper
+        <h1 className="font-serif text-2xl sm:text-3xl text-white font-normal tracking-tight">
+          Formulate a New Research Paper
         </h1>
-        <p className="text-sm text-[#dbc2b0] mt-1 max-w-2xl leading-relaxed">
-          Define your research topic, academic criteria, and methodology. ResearchForge will formulate a peer-review-grade research plan, discover primary sources, verify empirical claims, and draft a structured academic paper.
+        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+          Configure research objectives, paper structure, and citation standards. ResearchForge will generate a structured outline, extract peer-reviewed sources, and draft complete academic sections.
         </p>
-
-        {/* Preset Topics Carousel */}
-        <div className="mt-4 pt-4 border-t border-[#222735]/80">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#a38c7c] mb-2">
-            <Lightbulb className="w-3.5 h-3.5 text-[#ffb77d]" />
-            <span>Select a pre-formulated academic inquiry or enter your own:</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {PRESET_TOPICS.map((p, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => applyPreset(p)}
-                className="text-left p-2.5 bg-[#101319] hover:bg-[#1d2026] border border-[#222735] hover:border-[#ffb77d]/40 transition-colors group cursor-pointer"
-              >
-                <div className="text-xs font-medium text-[#e1e2eb] group-hover:text-[#ffb77d] line-clamp-1">
-                  {p.title}
-                </div>
-                <div className="text-[10px] font-mono text-[#a38c7c] mt-1 flex items-center gap-2">
-                  <span>{p.field}</span>
-                  <span>•</span>
-                  <span>{p.citation_style}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Main Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Core Topic & Question */}
-        <div className="bg-[#191c22] border border-[#222735] p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#222735] pb-3">
-            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#e1e2eb]">
-              <Target className="w-4 h-4 text-[#ffb77d]" />
-              <span>1. Research Scope & Inquiry</span>
+        <div className="bg-[#0f1523] border border-[#1e293b] p-6 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#1e293b] pb-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
+              <Target className="w-4 h-4 text-sky-400" />
+              <span>1. Paper Title &amp; Topic</span>
             </div>
-            <span className="text-[11px] font-mono text-[#a38c7c]">Stage 1 of 5</span>
+            <span className="text-[11px] text-slate-400">Step 1 of 5</span>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-              Research Topic / Working Title <span className="text-[#ffb4ab]">*</span>
+            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              Working Paper Title *
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Evaluation of Quantized Small Language Models in Edge Clinical Diagnostic Support"
-              className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] px-3.5 py-2.5 text-sm text-[#e1e2eb] placeholder-[#a38c7c]/60 focus:outline-none transition-colors"
+              placeholder="e.g., A Comparative Evaluation of Post-Quantum Cryptographic Migration in Financial Networks"
+              className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 text-white placeholder-slate-500 text-sm p-3 rounded-lg focus:outline-none transition-colors"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-              Primary Research Question (RQ)
-            </label>
-            <textarea
-              rows={2}
-              value={researchQuestion}
-              onChange={(e) => setResearchQuestion(e.target.value)}
-              placeholder="e.g., How do 4-bit quantized local models compare against 16-bit baselines in medical entity extraction accuracy and diagnostic latency?"
-              className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] px-3.5 py-2.5 text-sm text-[#e1e2eb] placeholder-[#a38c7c]/60 focus:outline-none transition-colors resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-              Research Objectives & Specific Gaps to Address
-            </label>
-            <textarea
-              rows={2}
-              value={objectives}
-              onChange={(e) => setObjectives(e.target.value)}
-              placeholder="e.g., (1) Systematically catalog benchmark datasets; (2) Synthesize conflicting claims on accuracy degradation; (3) Propose architectural guidelines for edge deployment."
-              className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] px-3.5 py-2.5 text-sm text-[#e1e2eb] placeholder-[#a38c7c]/60 focus:outline-none transition-colors resize-none"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Primary Research Question (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={researchQuestion}
+                onChange={(e) => setResearchQuestion(e.target.value)}
+                placeholder="What specific question or hypothesis does this paper investigate?"
+                className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 text-white placeholder-slate-500 text-xs p-3 rounded-lg focus:outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Core Objectives &amp; Scope (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={objectives}
+                onChange={(e) => setObjectives(e.target.value)}
+                placeholder="What are the key goals, limitations, and methodological boundaries?"
+                className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 text-white placeholder-slate-500 text-xs p-3 rounded-lg focus:outline-none transition-colors"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Academic Classification */}
-        <div className="bg-[#191c22] border border-[#222735] p-6 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#e1e2eb] border-b border-[#222735] pb-3">
-            <Compass className="w-4 h-4 text-[#4edea3]" />
-            <span>2. Academic Taxonomy & Structure</span>
+        {/* Paper Typology & Methodology */}
+        <div className="bg-[#0f1523] border border-[#1e293b] p-6 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#1e293b] pb-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
+              <Compass className="w-4 h-4 text-sky-400" />
+              <span>2. Paper Typology &amp; Discipline</span>
+            </div>
+            <span className="text-[11px] text-slate-400">Step 2 of 5</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-                Field of Study
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Academic Discipline
               </label>
               <select
                 value={field}
                 onChange={(e) => setField(e.target.value)}
-                className="w-full bg-[#101319] border border-[#222735] focus:border-[#4edea3] px-3 py-2 text-sm text-[#e1e2eb] focus:outline-none"
+                className="w-full bg-[#141c2e] border border-[#1e293b] text-white text-xs p-3 rounded-lg focus:outline-none cursor-pointer"
               >
-                <option value="Computer Science & AI">Computer Science & AI</option>
-                <option value="Medicine & Health">Medicine & Health Sciences</option>
-                <option value="Physics & Mathematics">Physics & Mathematics</option>
-                <option value="Economics & Finance">Economics & Finance</option>
-                <option value="Engineering & Robotics">Engineering & Robotics</option>
-                <option value="Social Sciences">Social Sciences & Humanities</option>
-                <option value="Law & Public Policy">Law & Public Policy</option>
-                <option value="Environmental Science">Environmental & Earth Sciences</option>
+                <option value="Computer Science & AI">Computer Science &amp; Artificial Intelligence</option>
+                <option value="Economics & Finance">Economics &amp; Quantitative Finance</option>
+                <option value="Medicine & Biomedical Sciences">Medicine &amp; Biomedical Sciences</option>
+                <option value="Engineering & Materials Science">Engineering &amp; Materials Science</option>
+                <option value="Environmental Science & Energy">Environmental Science &amp; Energy Transition</option>
+                <option value="Law & Public Policy">Law &amp; Technology Policy</option>
+                <option value="Social Sciences & Education">Social Sciences &amp; Cognitive Psychology</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Paper Typology
               </label>
               <select
                 value={paperType}
                 onChange={(e) => setPaperType(e.target.value)}
-                className="w-full bg-[#101319] border border-[#222735] focus:border-[#4edea3] px-3 py-2 text-sm text-[#e1e2eb] focus:outline-none"
+                className="w-full bg-[#141c2e] border border-[#1e293b] text-white text-xs p-3 rounded-lg focus:outline-none cursor-pointer"
               >
-                <option value="Literature Review">Literature Review (Critical Synthesis)</option>
-                <option value="Systematic Literature Review">Systematic Literature Review (PRISMA)</option>
-                <option value="Survey Paper">Comprehensive Survey Paper</option>
-                <option value="Empirical / Experimental Study">Empirical / Experimental Study</option>
-                <option value="Position Paper">Position Paper (Perspective & Argument)</option>
-                <option value="Comparative Analysis">Comparative Architectural Analysis</option>
-                <option value="General Academic Paper">General Academic Research Paper</option>
+                <option value="Literature Review">Comprehensive Literature Review</option>
+                <option value="Systematic Review">Systematic Literature Review (PRISMA)</option>
+                <option value="Original Research">Empirical / Experimental Research Paper</option>
+                <option value="Position Paper">Analytical Position / Perspective Paper</option>
+                <option value="Case Study">Qualitative Comparative Case Study</option>
+                <option value="Methodology Paper">Technical Method &amp; Algorithm Proposal</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-                Citation & Bibliography Style
-              </label>
-              <select
-                value={citationStyle}
-                onChange={(e) => setCitationStyle(e.target.value)}
-                className="w-full bg-[#101319] border border-[#222735] focus:border-[#4edea3] px-3 py-2 text-sm text-[#e1e2eb] focus:outline-none font-mono"
-              >
-                <option value="APA 7">APA 7th Edition (Author, Year)</option>
-                <option value="IEEE">IEEE Style ([1] Sequential Numbered)</option>
-                <option value="MLA 9">MLA 9th Edition (Humanities)</option>
-                <option value="Chicago">Chicago 17th Edition (Author-Date)</option>
-                <option value="Harvard">Harvard Reference Format</option>
-                <option value="Vancouver">Vancouver Biomedical Format</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-                Target Word Count
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {[2500, 5000, 8000, 12000].map((wc) => (
-                  <button
-                    key={wc}
-                    type="button"
-                    onClick={() => setTargetWordCount(wc)}
-                    className={`py-1.5 text-xs font-mono border transition-colors ${
-                      targetWordCount === wc
-                        ? "bg-[#ffb77d]/10 border-[#ffb77d] text-[#ffb77d]"
-                        : "bg-[#101319] border-[#222735] text-[#a38c7c] hover:border-[#32353c]"
-                    }`}
-                  >
-                    {wc >= 1000 ? `${wc / 1000}k` : wc} w
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Methodology & Depth */}
-        <div className="bg-[#191c22] border border-[#222735] p-6 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#e1e2eb] border-b border-[#222735] pb-3">
-            <Sliders className="w-4 h-4 text-[#b9c8de]" />
-            <span>3. Methodology & Evidence Rigor</span>
+        {/* Citation Format & Target Length */}
+        <div className="bg-[#0f1523] border border-[#1e293b] p-6 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#1e293b] pb-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
+              <Scale className="w-4 h-4 text-sky-400" />
+              <span>3. Citation Standard &amp; Length</span>
+            </div>
+            <span className="text-[11px] text-slate-400">Step 3 of 5</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
-                Methodology Framework
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Citation Standard
               </label>
-              <input
-                type="text"
-                value={methodology}
-                onChange={(e) => setMethodology(e.target.value)}
-                placeholder="e.g., Systematic Review (PRISMA 2020 Guidelines)"
-                className="w-full bg-[#101319] border border-[#222735] focus:border-[#b9c8de] px-3 py-2 text-sm text-[#e1e2eb] focus:outline-none"
-              />
+              <select
+                value={citationStyle}
+                onChange={(e) => setCitationStyle(e.target.value)}
+                className="w-full bg-[#141c2e] border border-[#1e293b] text-white text-xs p-3 rounded-lg focus:outline-none cursor-pointer"
+              >
+                <option value="APA 7">APA 7th Edition (Author, Year)</option>
+                <option value="IEEE">IEEE Format [Numerical]</option>
+                <option value="Nature">Nature / Vancouver [Superscript]</option>
+                <option value="Harvard">Harvard Referencing</option>
+                <option value="Chicago Author-Date">Chicago (Author-Date)</option>
+              </select>
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-[#dbc2b0] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Target Word Count
+              </label>
+              <select
+                value={targetWordCount}
+                onChange={(e) => setTargetWordCount(Number(e.target.value))}
+                className="w-full bg-[#141c2e] border border-[#1e293b] text-white text-xs p-3 rounded-lg focus:outline-none cursor-pointer"
+              >
+                <option value={3000}>3,000 words (~6-8 pages)</option>
+                <option value={5000}>5,000 words (~10-12 pages - Recommended)</option>
+                <option value={8000}>8,000 words (~16-18 pages - Long Form)</option>
+                <option value={12000}>12,000 words (~25 pages - Monograph)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Academic Rigor Level
               </label>
               <select
                 value={academicLevel}
                 onChange={(e) => setAcademicLevel(e.target.value)}
-                className="w-full bg-[#101319] border border-[#222735] focus:border-[#b9c8de] px-3 py-2 text-sm text-[#e1e2eb] focus:outline-none"
+                className="w-full bg-[#141c2e] border border-[#1e293b] text-white text-xs p-3 rounded-lg focus:outline-none cursor-pointer"
               >
-                <option value="Undergraduate Honors">Undergraduate Honors</option>
-                <option value="Master's / Graduate">Master's / Graduate Level</option>
-                <option value="Doctoral / PhD">Doctoral / PhD Dissertation</option>
-                <option value="Postdoctoral / Peer-Reviewed">Postdoctoral / Peer-Reviewed Journal</option>
+                <option value="Undergraduate">Undergraduate Honors</option>
+                <option value="Master's / Graduate">Graduate / Master's Level</option>
+                <option value="Doctoral / Post-Doc">Doctoral / Peer-Review Quality</option>
               </select>
             </div>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-xs font-mono text-[#dbc2b0] mb-2 uppercase tracking-wider">
-              Source Discovery Depth
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                {
-                  id: "quick",
-                  title: "Rapid Scoping",
-                  desc: "5-10 foundational sources. Fast synthesis.",
-                },
-                {
-                  id: "standard",
-                  title: "Standard Scholarly",
-                  desc: "10-20 peer-reviewed papers & CrossRef records.",
-                },
-                {
-                  id: "deep",
-                  title: "Deep Archival",
-                  desc: "Extensive multi-source cross-verification + conflict matrix.",
-                },
-              ].map((lvl) => (
-                <button
-                  key={lvl.id}
-                  type="button"
-                  onClick={() => setResearchDepth(lvl.id as any)}
-                  className={`p-3 text-left border transition-colors cursor-pointer ${
-                    researchDepth === lvl.id
-                      ? "bg-[#ffb77d]/10 border-[#ffb77d]"
-                      : "bg-[#101319] border-[#222735] hover:border-[#32353c]"
-                  }`}
-                >
-                  <div className={`text-xs font-mono uppercase font-bold ${
-                    researchDepth === lvl.id ? "text-[#ffb77d]" : "text-[#e1e2eb]"
-                  }`}>
-                    {lvl.title}
-                  </div>
-                  <div className="text-[11px] text-[#a38c7c] mt-1 leading-normal">
-                    {lvl.desc}
-                  </div>
-                </button>
-              ))}
+        {/* Research Depth Selection */}
+        <div className="bg-[#0f1523] border border-[#1e293b] p-6 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#1e293b] pb-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
+              <Sliders className="w-4 h-4 text-sky-400" />
+              <span>4. Source Discovery Scope</span>
             </div>
+            <span className="text-[11px] text-slate-400">Step 4 of 5</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              {
+                id: "quick",
+                title: "Accelerated Synthesis",
+                desc: "8-12 sources, rapid generation of primary claims and initial draft.",
+              },
+              {
+                id: "standard",
+                title: "Standard Academic Review",
+                desc: "15-25 verified sources, deep synthesis, standard literature gap analysis.",
+              },
+              {
+                id: "deep",
+                title: "Exhaustive Corpus Mining",
+                desc: "30+ verified sources, full cross-validation and rigorous debate mapping.",
+              },
+            ].map((lvl) => (
+              <button
+                key={lvl.id}
+                type="button"
+                onClick={() => setResearchDepth(lvl.id as any)}
+                className={`p-4 text-left border rounded-xl transition-all cursor-pointer ${
+                  researchDepth === lvl.id
+                    ? "bg-sky-500/10 border-sky-500 text-white ring-1 ring-sky-500/20"
+                    : "bg-[#141c2e] border-[#1e293b] hover:border-slate-700 text-slate-300"
+                }`}
+              >
+                <div className={`font-medium text-xs ${
+                  researchDepth === lvl.id ? "text-sky-300 font-semibold" : "text-white"
+                }`}>
+                  {lvl.title}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  {lvl.desc}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Submit Action */}
         <div className="flex items-center justify-between pt-2">
-          <div className="text-xs font-mono text-[#a38c7c] flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#4edea3]" />
-            <span>Local Qwen Inference Active • No Paid APIs Required</span>
+          <div className="text-xs text-slate-400 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>Private • Runs Locally with On-Device Inference</span>
           </div>
 
           <button
             type="submit"
             disabled={isLoading || !title.trim()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#ffb77d] hover:bg-[#ffdcc3] text-[#4d2600] font-mono text-xs uppercase font-semibold tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md hover:shadow-amber-500/20"
           >
             {isLoading ? (
               <>
-                <span className="inline-block w-4 h-4 border-2 border-[#4d2600] border-t-transparent rounded-full animate-spin" />
+                <span className="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                 <span>Formulating Plan...</span>
               </>
             ) : (

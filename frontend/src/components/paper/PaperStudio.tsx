@@ -319,18 +319,18 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#101319]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#090d16]">
       {/* Top Header / Stage Nav */}
-      <div className="bg-[#101319] border-b border-[#222735] px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0">
+      <div className="bg-[#0b0f19] border-b border-[#1e293b] px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#ffb77d]">
-            <GraduationCap className="w-4 h-4 text-[#ffb77d]" />
-            <span className="font-bold">Research Paper Studio</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
+            <GraduationCap className="w-4 h-4 text-amber-400" />
+            <span>Research Paper Studio</span>
           </div>
 
           {/* Stepper */}
           {currentPaper && (
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono border-l border-[#222735] pl-3">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs border-l border-[#1e293b] pl-3">
               {[
                 { id: "config", label: "1. Scope" },
                 { id: "plan", label: "2. Plan" },
@@ -338,13 +338,13 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
                 { id: "editor", label: "4. Editor" },
               ].map((step, idx) => (
                 <React.Fragment key={step.id}>
-                  {idx > 0 && <ChevronRight className="w-3 h-3 text-[#554336]" />}
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-slate-600" />}
                   <button
                     onClick={() => setStudioStage(step.id as any)}
-                    className={`px-1.5 py-0.5 transition-colors cursor-pointer ${
+                    className={`px-2 py-0.5 rounded-md transition-all cursor-pointer font-medium ${
                       studioStage === step.id
-                        ? "text-[#ffb77d] font-bold underline"
-                        : "text-[#a38c7c] hover:text-[#e1e2eb]"
+                        ? "text-amber-300 font-semibold bg-amber-500/10 border border-amber-500/20"
+                        : "text-slate-400 hover:text-white"
                     }`}
                   >
                     {step.label}
@@ -355,38 +355,38 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
           )}
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 text-xs">
           <button
             onClick={() => {
               loadAllPapers();
               setIsArchiveOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#b9c8de] text-[#e1e2eb] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-slate-300 hover:text-white transition-all cursor-pointer rounded-lg font-medium"
           >
-            <History className="w-3.5 h-3.5 text-[#b9c8de]" />
+            <History className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden sm:inline">Saved Papers ({allPapers.length})</span>
           </button>
 
           {studioStage === "editor" && currentPaper && (
             <button
               onClick={() => setShowExportPanel((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 border text-[#e1e2eb] transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
                 showExportPanel
-                  ? "bg-[#ffb77d]/10 border-[#ffb77d] text-[#ffb77d]"
-                  : "bg-[#191c22] hover:bg-[#272a31] border-[#222735] hover:border-[#ffb77d]"
+                  ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
+                  : "bg-[#141c2e] hover:bg-[#1a243a] border-[#1e293b] hover:border-amber-500/30 text-slate-300 hover:text-white"
               }`}
               title="Open / close export panel"
             >
-              <Download className="w-3.5 h-3.5 text-[#ffb77d]" />
+              <Download className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">Export Paper</span>
             </button>
           )}
 
           <button
             onClick={handleNewPaper}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] hover:border-[#ffb77d] text-[#e1e2eb] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-amber-500/40 text-slate-300 hover:text-white transition-all cursor-pointer rounded-lg font-medium"
           >
-            <Plus className="w-3.5 h-3.5 text-[#ffb77d]" />
+            <Plus className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">New Paper</span>
           </button>
         </div>
@@ -394,12 +394,12 @@ export const PaperStudio: React.FC<PaperStudioProps> = ({ onBackToArchival }) =>
 
       {/* Generation Job Status Notification Banner */}
       {activeJob && activeJob.status === "running" && (
-        <div className="bg-[#191c22] border-b border-[#ffb77d]/30 px-6 py-2 flex items-center justify-between text-xs font-mono text-[#ffb77d] animate-pulse">
+        <div className="bg-[#141c2e] border-b border-amber-500/30 px-6 py-2.5 flex items-center justify-between text-xs text-amber-300 animate-pulse">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#ffb77d] animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             <span>Autonomous Pipeline Running: Stage [{activeJob.stage}] ({activeJob.progress}%)</span>
           </div>
-          <span className="text-[#a38c7c]">{activeJob.stage} in progress...</span>
+          <span className="text-slate-400">{activeJob.stage} in progress...</span>
         </div>
       )}
 

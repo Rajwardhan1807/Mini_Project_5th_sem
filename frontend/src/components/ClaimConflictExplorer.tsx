@@ -8,9 +8,6 @@ import {
   ExternalLink,
   ShieldCheck,
   Check,
-  X,
-  HelpCircle,
-  BarChart3,
   CheckCircle2,
 } from "lucide-react";
 import { Claim } from "@/lib/api";
@@ -42,26 +39,28 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
     switch (status) {
       case "VERIFIED":
         return (
-          <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#4edea3] bg-[#10b981]/10 border border-[#10b981]/30 rounded-sm">
-            Verified Fact
+          <span className="px-2.5 py-0.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center gap-1">
+            <Check className="w-3 h-3" />
+            <span>Verified Claim</span>
           </span>
         );
       case "PARTIALLY VERIFIED":
         return (
-          <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffb77d] bg-[#d97706]/10 border border-[#d97706]/30 rounded-sm">
+          <span className="px-2.5 py-0.5 text-xs font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/30 rounded-full">
             Partially Verified
           </span>
         );
       case "CONTRADICTED":
         return (
-          <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffb4ab] bg-[#93000a]/20 border border-[#dc2626]/30 rounded-sm">
-            Contradicted / Conflicting
+          <span className="px-2.5 py-0.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            <span>Contradicted / Debated</span>
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#a38c7c] bg-[#131720] border border-[#222735] rounded-sm">
-            Needs More Evidence
+          <span className="px-2.5 py-0.5 text-xs font-semibold text-slate-400 bg-slate-800 border border-slate-700 rounded-full">
+            Needs Additional Evidence
           </span>
         );
     }
@@ -74,47 +73,47 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
   return (
     <div className="w-full space-y-6">
       {/* ── Summary Masthead ────────────────────────────────────────────────── */}
-      <section className="border border-[#222735] bg-[#0b0e14] p-5 sm:p-6 space-y-4 rounded-sm">
+      <section className="border border-[#1e293b] bg-[#0f1523] p-5 sm:p-6 rounded-xl space-y-4 shadow-sm">
         {/* Status Alert Banner */}
         <div
-          className={`border p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs rounded-sm ${
+          className={`border p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs rounded-xl ${
             conflictCount > 0
-              ? "border-[#d97706]/50 bg-[#d97706]/10 text-[#ffb77d]"
-              : "border-[#10b981]/50 bg-[#10b981]/10 text-[#4edea3]"
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+              : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
           }`}
         >
           <div className="flex items-center gap-2.5">
             {conflictCount > 0 ? (
-              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             )}
-            <span className="tracking-wider uppercase font-semibold">
+            <span className="font-semibold">
               {conflictCount > 0
-                ? `${conflictCount} Conflicting Perspectives Detected &bull; Fact-Checking Complete`
-                : "All Consulted Sources in Agreement &bull; Zero Conflicts Detected"}
+                ? `${conflictCount} Conflicting Perspectives Detected • Fact-Checking Complete`
+                : "All Consulted Sources in Consensus • Zero Contradictions Detected"}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs">
             <span>{verifiedCount} Verified</span>
             <span>&bull;</span>
-            <span>{claims.length} Total Claims Checked</span>
+            <span>{claims.length} Total Claims Audited</span>
           </div>
         </div>
 
         {/* Titles */}
         <div className="pt-2">
-          <h2 className="font-serif text-2xl sm:text-3xl text-[#f1f5f9] tracking-tight font-normal">
-            Fact-Checking &amp; Contradictions
+          <h2 className="font-serif text-2xl sm:text-3xl text-white tracking-tight font-normal">
+            Fact-Checking &amp; Evidentiary Conflicts
           </h2>
-          <p className="text-sm text-[#dbc2b0] font-sans mt-1 max-w-3xl leading-relaxed">
-            Review which statements are corroborated across multiple sources and where opinions or data diverge.
+          <p className="text-sm text-slate-300 font-sans mt-1 max-w-3xl leading-relaxed">
+            Review which statements are corroborated across multiple sources and where empirical data diverges.
           </p>
         </div>
 
         {/* Filter Chips */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#222735] font-mono text-xs">
-          <span className="text-[#a38c7c] text-[11px] uppercase mr-1">Filter:</span>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#1e293b] text-xs">
+          <span className="text-slate-400 font-medium mr-1">Filter:</span>
           {[
             { id: "ALL", label: `All Claims (${claims.length})` },
             { id: "CONFLICTS", label: `Conflicts (${conflictCount})` },
@@ -123,10 +122,10 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
             <button
               key={btn.id}
               onClick={() => setFilter(btn.id)}
-              className={`px-3 py-1 border transition-colors cursor-pointer rounded-sm ${
+              className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer font-medium ${
                 filter === btn.id
-                  ? "bg-[#ffb77d] text-[#08090b] border-[#ffb77d] font-bold"
-                  : "bg-[#101319] text-[#dbc2b0] border-[#222735] hover:border-[#a38c7c]"
+                  ? "bg-sky-500 text-slate-950 border-sky-400 font-semibold shadow-sm"
+                  : "bg-[#141c2e] text-slate-300 border-[#1e293b] hover:border-slate-600"
               }`}
             >
               {btn.label}
@@ -138,7 +137,7 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
       {/* ── Claims List ─────────────────────────────────────────────────────── */}
       <section className="space-y-3">
         {filteredClaims.length === 0 ? (
-          <div className="p-10 border border-[#222735] bg-[#0e1117] text-center text-xs font-mono text-[#a38c7c] rounded-sm">
+          <div className="p-12 border border-[#1e293b] bg-[#0f1523] text-center text-xs text-slate-400 rounded-xl">
             No claims matching the selected filter.
           </div>
         ) : (
@@ -151,35 +150,35 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
             return (
               <div
                 key={claim.id}
-                className={`border bg-[#0e1117] transition-colors rounded-sm overflow-hidden ${
+                className={`border bg-[#0f1523] transition-all rounded-xl overflow-hidden shadow-sm ${
                   hasConflict
-                    ? "border-[#d97706]/40 hover:border-[#d97706]"
-                    : "border-[#222735] hover:border-[#32353c]"
+                    ? "border-amber-500/30 hover:border-amber-500/50"
+                    : "border-[#1e293b] hover:border-slate-700"
                 }`}
               >
                 {/* Header row */}
                 <div
                   onClick={() => toggleExpand(claim.id)}
-                  className="p-4 sm:p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-[#131720] transition-colors"
+                  className="p-4 sm:p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-[#141c2e] transition-colors"
                 >
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       {getStatusBadge(claim.status)}
-                      <span className="text-xs font-mono text-[#a38c7c]">
-                        Confidence: <strong className="text-[#f1f5f9]">{claim.confidence}%</strong>
+                      <span className="text-xs text-slate-400">
+                        Confidence: <strong className="text-white font-mono">{claim.confidence}%</strong>
                       </span>
-                      <span className="text-xs font-mono text-[#a38c7c] hidden sm:inline">
+                      <span className="text-xs text-slate-400 hidden sm:inline">
                         ({supSources.length} supporting, {conSources.length} contradicting)
                       </span>
                     </div>
 
-                    <h3 className="font-serif text-base sm:text-lg text-[#f1f5f9] font-medium leading-snug">
+                    <h3 className="font-serif text-base sm:text-lg text-white font-medium leading-snug">
                       {claim.claim}
                     </h3>
                   </div>
 
                   <button
-                    className="p-1 text-[#a38c7c] hover:text-[#e1e2eb] shrink-0 mt-1"
+                    className="p-1.5 text-slate-400 hover:text-white shrink-0 mt-0.5 rounded-md hover:bg-slate-800 transition-colors"
                     aria-label="Toggle details"
                   >
                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -188,43 +187,43 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                  <div className="p-5 border-t border-[#222735] bg-[#0b0e14] space-y-4 text-xs font-mono">
+                  <div className="p-5 border-t border-[#1e293b] bg-[#0b0f19] space-y-4 text-xs">
                     {/* Analysis */}
                     {claim.analysis && (
-                      <div className="p-3.5 bg-[#101319] border border-[#222735] rounded-sm space-y-1">
-                        <span className="text-[11px] text-[#ffb77d] uppercase tracking-wider font-semibold block">
+                      <div className="p-4 bg-[#141c2e] border border-[#1e293b] rounded-xl space-y-1.5">
+                        <span className="text-xs text-sky-400 font-semibold block">
                           Fact-Check Analysis:
                         </span>
-                        <p className="font-sans text-sm text-[#dbc2b0] leading-relaxed">
+                        <p className="font-sans text-sm text-slate-200 leading-relaxed">
                           {claim.analysis}
                         </p>
                       </div>
                     )}
 
                     {/* Sources Comparison Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
                       {/* Supporting Sources */}
-                      <div className="p-3 bg-[#101319] border border-[#10b981]/30 rounded-sm space-y-2">
-                        <div className="flex items-center gap-1.5 text-[#4edea3] font-semibold text-xs">
+                      <div className="p-4 bg-[#141c2e] border border-emerald-500/20 rounded-xl space-y-2.5">
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-semibold text-xs">
                           <Check className="w-3.5 h-3.5" />
                           <span>Supporting Sources ({supSources.length})</span>
                         </div>
                         {supSources.length === 0 ? (
-                          <p className="text-[#a38c7c] italic text-[11px]">No direct supporting links recorded.</p>
+                          <p className="text-slate-500 italic text-xs">No direct supporting links recorded.</p>
                         ) : (
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             {supSources.map((s, idx) => (
-                              <div key={s.id || idx} className="text-[11px] text-[#dbc2b0]">
+                              <div key={s.id || idx} className="text-xs text-slate-300">
                                 <a
                                   href={s.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[#ffb77d] hover:underline flex items-center gap-1 truncate"
+                                  className="text-sky-400 hover:text-sky-300 hover:underline flex items-center gap-1 truncate font-medium"
                                 >
                                   <span className="truncate">{s.title}</span>
                                   <ExternalLink className="w-3 h-3 shrink-0" />
                                 </a>
-                                <span className="text-[#a38c7c] text-[10px]">
+                                <span className="text-slate-400 text-[11px]">
                                   {s.domain} &bull; Quality: {Math.round(s.reliability * 100)}%
                                 </span>
                               </div>
@@ -234,27 +233,27 @@ export const ClaimConflictExplorer: React.FC<ClaimConflictExplorerProps> = ({ cl
                       </div>
 
                       {/* Contradicting Sources */}
-                      <div className="p-3 bg-[#101319] border border-[#d97706]/30 rounded-sm space-y-2">
-                        <div className="flex items-center gap-1.5 text-[#ffb77d] font-semibold text-xs">
+                      <div className="p-4 bg-[#141c2e] border border-amber-500/20 rounded-xl space-y-2.5">
+                        <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span>Contradicting Sources ({conSources.length})</span>
                         </div>
                         {conSources.length === 0 ? (
-                          <p className="text-[#a38c7c] italic text-[11px]">No contradicting evidence identified.</p>
+                          <p className="text-slate-500 italic text-xs">No contradicting evidence identified.</p>
                         ) : (
-                          <div className="space-y-1.5">
+                          <div className="space-y-2">
                             {conSources.map((s, idx) => (
-                              <div key={s.id || idx} className="text-[11px] text-[#dbc2b0]">
+                              <div key={s.id || idx} className="text-xs text-slate-300">
                                 <a
                                   href={s.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[#ffb77d] hover:underline flex items-center gap-1 truncate"
+                                  className="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 truncate font-medium"
                                 >
                                   <span className="truncate">{s.title}</span>
                                   <ExternalLink className="w-3 h-3 shrink-0" />
                                 </a>
-                                <span className="text-[#a38c7c] text-[10px]">
+                                <span className="text-slate-400 text-[11px]">
                                   {s.domain} &bull; Quality: {Math.round(s.reliability * 100)}%
                                 </span>
                               </div>

@@ -13,9 +13,6 @@ import {
   ArrowRight,
   ArrowLeft,
   BookOpen,
-  GitCompare,
-  FileCheck2,
-  Sparkles
 } from "lucide-react";
 import { Paper, PaperSource } from "@/lib/api";
 
@@ -93,77 +90,77 @@ export const PaperSourceView: React.FC<PaperSourceViewProps> = ({
   const verifiedCount = sources.filter((s) => s.verified).length;
 
   return (
-    <div className="max-w-5xl mx-auto py-4 px-4 sm:px-6 space-y-6">
+    <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
       {/* Banner */}
-      <div className="bg-[#191c22] border border-[#222735] p-6 relative">
+      <div className="bg-[#0f1523] border border-[#1e293b] p-6 sm:p-7 rounded-2xl relative shadow-md">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#4edea3]">
-            <FolderOpen className="w-4 h-4 text-[#4edea3]" />
-            <span>Stage 3 of 5: Primary Source & Evidence Registry</span>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+            <FolderOpen className="w-4 h-4 text-emerald-400" />
+            <span>Step 3: Discovered Sources &amp; Citations</span>
           </div>
           <button
             onClick={onBackToPlan}
-            className="inline-flex items-center gap-1 text-xs font-mono text-[#a38c7c] hover:text-[#e1e2eb] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Plan</span>
           </button>
         </div>
-        <h1 className="font-serif text-2xl text-[#e1e2eb] mt-2 font-normal">
-          Discovered Literature & Evidence Corpus
+        <h1 className="font-serif text-2xl text-white mt-2 font-normal">
+          Identified Sources &amp; Academic Bibliography
         </h1>
-        <p className="text-xs text-[#dbc2b0] mt-1 max-w-2xl leading-relaxed">
-          Primary sources retrieved from CrossRef, open-access academic repositories, and web search. Each source is parsed for empirical findings and ready for claim synthesis and inline citation drafting.
+        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+          Academic studies, official proceedings, and technical records collected for your topic. These will be cited directly throughout each paper section.
         </p>
 
         {/* Telemetry Stat Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3 border-t border-[#222735] font-mono text-xs">
-          <div className="bg-[#101319] p-2.5 border border-[#222735]">
-            <span className="text-[#a38c7c] block text-[10px]">TOTAL SOURCES</span>
-            <span className="text-[#e1e2eb] font-bold text-base">{sources.length}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3.5 border-t border-[#1e293b] text-xs">
+          <div className="bg-[#141c2e] p-3 rounded-xl border border-[#1e293b]">
+            <span className="text-slate-400 block text-[11px] font-medium">TOTAL SOURCES</span>
+            <span className="text-white font-bold font-mono text-base">{sources.length}</span>
           </div>
-          <div className="bg-[#101319] p-2.5 border border-[#222735]">
-            <span className="text-[#a38c7c] block text-[10px]">VERIFIED PEER-REVIEW</span>
-            <span className="text-[#4edea3] font-bold text-base">{verifiedCount}</span>
+          <div className="bg-[#141c2e] p-3 rounded-xl border border-[#1e293b]">
+            <span className="text-slate-400 block text-[11px] font-medium">VERIFIED ACADEMIC</span>
+            <span className="text-emerald-400 font-bold font-mono text-base">{verifiedCount}</span>
           </div>
-          <div className="bg-[#101319] p-2.5 border border-[#222735]">
-            <span className="text-[#a38c7c] block text-[10px]">CITATION FORMAT</span>
-            <span className="text-[#ffb77d] font-bold text-base">{paper.citation_style}</span>
+          <div className="bg-[#141c2e] p-3 rounded-xl border border-[#1e293b]">
+            <span className="text-slate-400 block text-[11px] font-medium">CITATION FORMAT</span>
+            <span className="text-sky-300 font-bold text-base">{paper.citation_style}</span>
           </div>
-          <div className="bg-[#101319] p-2.5 border border-[#222735]">
-            <span className="text-[#a38c7c] block text-[10px]">TARGET RIGOR</span>
-            <span className="text-[#b9c8de] font-bold text-base">{paper.research_depth}</span>
+          <div className="bg-[#141c2e] p-3 rounded-xl border border-[#1e293b]">
+            <span className="text-slate-400 block text-[11px] font-medium">RESEARCH DEPTH</span>
+            <span className="text-amber-300 font-bold text-base capitalize">{paper.research_depth}</span>
           </div>
         </div>
       </div>
 
       {/* Filter and Action Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 flex-1 max-w-md">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#a38c7c] absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter by title, author, or keyword..."
-              className="w-full bg-[#101319] border border-[#222735] focus:border-[#4edea3] pl-9 pr-3 py-2 text-xs text-[#e1e2eb] focus:outline-none"
+              className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 pl-9 pr-3 py-2 text-xs text-white focus:outline-none rounded-xl"
             />
           </div>
 
-          <div className="flex items-center border border-[#222735] bg-[#101319] p-0.5">
+          <div className="flex items-center border border-[#1e293b] bg-[#141c2e] p-1 rounded-xl">
             <button
               onClick={() => setFilterType("all")}
-              className={`px-2.5 py-1 text-[11px] font-mono transition-colors ${
-                filterType === "all" ? "bg-[#191c22] text-[#ffb77d]" : "text-[#a38c7c]"
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                filterType === "all" ? "bg-sky-500/20 text-sky-300" : "text-slate-400 hover:text-white"
               }`}
             >
               All ({sources.length})
             </button>
             <button
               onClick={() => setFilterType("verified")}
-              className={`px-2.5 py-1 text-[11px] font-mono transition-colors ${
-                filterType === "verified" ? "bg-[#191c22] text-[#4edea3]" : "text-[#a38c7c]"
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                filterType === "verified" ? "bg-emerald-500/20 text-emerald-300" : "text-slate-400 hover:text-white"
               }`}
             >
               Verified ({verifiedCount})
@@ -174,19 +171,19 @@ export const PaperSourceView: React.FC<PaperSourceViewProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] text-xs font-mono text-[#e1e2eb] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-xs font-medium text-white transition-all cursor-pointer rounded-xl"
           >
-            <Plus className="w-3.5 h-3.5 text-[#ffb77d]" />
+            <Plus className="w-3.5 h-3.5 text-amber-400" />
             <span>Add Source Manually</span>
           </button>
 
           <button
             onClick={onDiscoverMore}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#191c22] hover:bg-[#272a31] border border-[#222735] text-xs font-mono text-[#b9c8de] transition-colors disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-slate-600 text-xs font-medium text-slate-300 hover:text-white transition-all disabled:opacity-50 cursor-pointer rounded-xl"
           >
-            <Search className="w-3.5 h-3.5" />
-            <span>Discover More</span>
+            <Search className="w-3.5 h-3.5 text-sky-400" />
+            <span>Find More Sources</span>
           </button>
         </div>
       </div>
@@ -194,107 +191,110 @@ export const PaperSourceView: React.FC<PaperSourceViewProps> = ({
       {/* Source Cards List */}
       <div className="space-y-3">
         {filteredSources.length === 0 ? (
-          <div className="bg-[#191c22] border border-[#222735] p-12 text-center">
-            <BookOpen className="w-8 h-8 text-[#a38c7c] mx-auto mb-3" />
-            <div className="text-sm text-[#e1e2eb] font-mono">No matching sources found</div>
-            <p className="text-xs text-[#a38c7c] mt-1 max-w-sm mx-auto">
-              {sources.length === 0
-                ? "No sources have been retrieved yet. Click 'Discover More' or add custom references."
-                : "Adjust your search filter or clear keywords."}
+          <div className="bg-[#0f1523] border border-[#1e293b] p-12 text-center rounded-2xl">
+            <BookOpen className="w-8 h-8 text-slate-500 mx-auto mb-3" />
+            <div className="text-sm text-white font-medium">No matching sources found</div>
+            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+              Try adjusting your search query, or click "Find More Sources" to query external databases.
             </p>
           </div>
         ) : (
-          filteredSources.map((src, idx) => (
+          filteredSources.map((source, idx) => (
             <div
-              key={src.id || idx}
-              className="bg-[#191c22] border border-[#222735] hover:border-[#32353c] p-4 transition-colors"
+              key={source.id || idx}
+              className="bg-[#0f1523] border border-[#1e293b] hover:border-slate-700 p-5 rounded-2xl transition-all shadow-sm space-y-3"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-                    <span className="text-[#ffb77d] font-bold">[{idx + 1}]</span>
-                    {src.verified ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#003824] border border-[#4edea3]/40 text-[#4edea3] text-[10px]">
-                        <ShieldCheck className="w-3 h-3" />
-                        <span>VERIFIED PEER-REVIEW</span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-mono text-sky-400 font-semibold">[{idx + 1}]</span>
+                    {source.verified ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>Verified Peer-Reviewed</span>
                       </span>
                     ) : (
-                      <span className="px-1.5 py-0.5 bg-[#101319] border border-[#222735] text-[#a38c7c] text-[10px]">
-                        WEB HARVEST
+                      <span className="text-[11px] font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">
+                        Web Citation
                       </span>
                     )}
-                    {src.year && <span className="text-[#b9c8de]">({src.year})</span>}
-                    {src.journal && (
-                      <span className="text-[#dbc2b0] italic truncate max-w-xs">
-                        {src.journal}
+
+                    {source.year && (
+                      <span className="text-slate-400 font-mono text-xs">({source.year})</span>
+                    )}
+
+                    {source.journal && (
+                      <span className="text-slate-300 italic text-xs truncate max-w-xs">
+                        {source.journal}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-serif text-base text-[#e1e2eb] font-normal leading-snug">
-                    {src.title}
+                  <h3 className="font-serif text-base text-white font-medium leading-snug">
+                    {source.title}
                   </h3>
 
-                  {src.authors && (
-                    <div className="text-xs text-[#a38c7c] font-sans">
-                      Authors: <span className="text-[#dbc2b0]">{src.authors}</span>
-                    </div>
-                  )}
-
-                  {src.abstract && (
-                    <p className="text-xs text-[#dbc2b0]/90 leading-relaxed font-sans line-clamp-2">
-                      {src.abstract}
+                  {source.authors && (
+                    <p className="text-xs text-slate-400">
+                      Authors: <span className="text-slate-300">{source.authors}</span>
                     </p>
                   )}
                 </div>
 
-                {/* Score & Link Badges */}
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <div className="text-right font-mono text-[11px]">
-                    <div className="text-[#a38c7c]">Reliability</div>
-                    <div className="text-[#4edea3] font-bold">
-                      {((src.reliability || 0.8) * 100).toFixed(0)}%
-                    </div>
-                  </div>
-
-                  {src.url && (
-                    <a
-                      href={src.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] font-mono text-[#ffb77d] hover:underline"
-                    >
-                      <span>{src.doi ? "DOI" : "Source URL"}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
+                {source.url && (
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] hover:border-sky-500/40 text-sky-400 hover:text-sky-300 text-xs font-medium rounded-lg transition-all shrink-0"
+                  >
+                    <span>View</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </div>
+
+              {source.abstract && (
+                <p className="text-xs text-slate-300 font-sans leading-relaxed line-clamp-3 pt-1 border-t border-[#1e293b]/70">
+                  {source.abstract}
+                </p>
+              )}
+
+              {source.doi && (
+                <div className="text-[11px] font-mono text-slate-400">
+                  DOI: <span className="text-sky-300">{source.doi}</span>
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-[#222735]">
-        <div className="text-xs font-mono text-[#a38c7c]">
-          <span>Ready to synthesize {sources.length} sources into a structured research draft.</span>
-        </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#1e293b]">
+        <button
+          type="button"
+          onClick={onBackToPlan}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] text-xs font-medium text-slate-300 hover:text-white rounded-xl transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Outline</span>
+        </button>
 
         <button
+          type="button"
           onClick={onDraftPaper}
           disabled={isLoading || sources.length === 0}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#ffb77d] hover:bg-[#ffdcc3] text-[#4d2600] font-mono text-xs uppercase font-bold tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs rounded-xl transition-all disabled:opacity-50 cursor-pointer shadow-md hover:shadow-amber-500/20"
         >
           {isLoading ? (
             <>
-              <span className="inline-block w-4 h-4 border-2 border-[#4d2600] border-t-transparent rounded-full animate-spin" />
-              <span>Synthesizing & Drafting...</span>
+              <span className="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+              <span>Drafting Sections...</span>
             </>
           ) : (
             <>
-              <FileCheck2 className="w-4 h-4" />
-              <span>Draft Complete Academic Paper</span>
+              <span>Begin Drafting Academic Paper</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -303,128 +303,103 @@ export const PaperSourceView: React.FC<PaperSourceViewProps> = ({
 
       {/* Manual Source Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="bg-[#191c22] border border-[#222735] max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#222735] pb-3">
-              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#ffb77d]">
-                <Plus className="w-4 h-4" />
-                <span>Add Custom Primary Source</span>
-              </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-[#a38c7c] hover:text-[#e1e2eb] text-sm font-mono"
-              >
-                ✕
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#0f1523] border border-[#1e293b] p-6 max-w-lg w-full text-white rounded-2xl shadow-2xl space-y-4">
+            <h3 className="font-serif text-lg font-medium">Add Academic Citation</h3>
 
-            <form onSubmit={handleManualSubmit} className="space-y-3">
+            <form onSubmit={handleManualSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                  Paper / Article Title *
-                </label>
+                <label className="block text-slate-300 mb-1 font-medium">Article Title *</label>
                 <input
                   type="text"
                   required
                   value={manualTitle}
                   onChange={(e) => setManualTitle(e.target.value)}
                   placeholder="e.g., Deep Residual Learning for Image Recognition"
-                  className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none"
+                  className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                    Authors
-                  </label>
+                  <label className="block text-slate-300 mb-1 font-medium">Authors</label>
                   <input
                     type="text"
                     value={manualAuthors}
                     onChange={(e) => setManualAuthors(e.target.value)}
-                    placeholder="e.g., He, K., Zhang, X., Ren, S., & Sun, J."
-                    className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none"
+                    placeholder="e.g., He, Zhang, Ren, Sun"
+                    className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                    Publication Year
-                  </label>
+                  <label className="block text-slate-300 mb-1 font-medium">Publication Year</label>
                   <input
                     type="text"
                     value={manualYear}
                     onChange={(e) => setManualYear(e.target.value)}
-                    className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none"
+                    className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                    Journal / Conference
-                  </label>
+                  <label className="block text-slate-300 mb-1 font-medium">Journal / Venue</label>
                   <input
                     type="text"
                     value={manualJournal}
                     onChange={(e) => setManualJournal(e.target.value)}
                     placeholder="e.g., IEEE CVPR"
-                    className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none"
+                    className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                    DOI (Digital Object Identifier)
-                  </label>
+                  <label className="block text-slate-300 mb-1 font-medium">DOI</label>
                   <input
                     type="text"
                     value={manualDoi}
                     onChange={(e) => setManualDoi(e.target.value)}
                     placeholder="e.g., 10.1109/CVPR.2016.90"
-                    className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none font-mono"
+                    className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white font-mono focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                  URL
-                </label>
+                <label className="block text-slate-300 mb-1 font-medium">URL</label>
                 <input
                   type="url"
                   value={manualUrl}
                   onChange={(e) => setManualUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none"
+                  className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-[#dbc2b0] uppercase mb-1">
-                  Abstract / Empirical Snippet
-                </label>
+                <label className="block text-slate-300 mb-1 font-medium">Abstract / Excerpt</label>
                 <textarea
                   rows={3}
                   value={manualAbstract}
                   onChange={(e) => setManualAbstract(e.target.value)}
-                  placeholder="Paste abstract or excerpt for synthesis..."
-                  className="w-full bg-[#101319] border border-[#222735] focus:border-[#ffb77d] p-2 text-xs text-[#e1e2eb] focus:outline-none resize-none"
+                  placeholder="Paste excerpt or summary..."
+                  className="w-full bg-[#141c2e] border border-[#1e293b] focus:border-sky-500/50 p-2.5 rounded-lg text-white focus:outline-none resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#222735]">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#1e293b]">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-3 py-1.5 bg-[#101319] border border-[#222735] text-xs font-mono text-[#a38c7c]"
+                  className="px-4 py-2 bg-[#141c2e] hover:bg-[#1a243a] border border-[#1e293b] text-slate-300 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-[#ffb77d] text-[#4d2600] text-xs font-mono uppercase font-bold"
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow-sm"
                 >
-                  Insert Source
+                  Add Citation
                 </button>
               </div>
             </form>

@@ -16,8 +16,8 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "ResearchForge — Autonomous Evidentiary Terminal",
-  description: "Autonomous evidentiary terminal and multi-agent research intelligence engine powered by local LLMs, DuckDuckGo, and rigorous contradiction analysis.",
+  title: "ResearchForge — Autonomous Academic Research Workspace",
+  description: "Private local AI research assistant that discovers verified sources, checks facts, and drafts complete academic research papers with citations.",
 };
 
 export default function RootLayout({
@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#08090b] text-[#e1e2eb] font-sans antialiased selection:bg-[#d97706] selection:text-[#08090b]">
+      <body className="min-h-full flex flex-col bg-[#090d16] text-[#f1f5f9] font-sans antialiased selection:bg-sky-500/25 selection:text-sky-200">
         {children}
       </body>
     </html>
